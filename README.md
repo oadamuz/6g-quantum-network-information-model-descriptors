@@ -148,8 +148,3 @@ If you use these descriptor examples, please cite the associated manuscript:
 }
 ```
 
-Please update the BibTeX entry with the final publication venue, DOI, and URL once available.
-
-## License
-
-Add the intended license for this repository before public release. For example, use a permissive license such as MIT or Apache-2.0 if the goal is to allow reuse and extension of the descriptor examples.
