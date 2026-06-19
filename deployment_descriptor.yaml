@@ -1,0 +1,524 @@
+# Version of the descriptor structure.
+# Example values: "0.1-draft", "1.0".
+# This field allows future schema changes while preserving compatibility.
+schema_version: "0.1-draft"
+
+# Type of descriptor.
+# This descriptor represents one deployable alternative for the requested quantum service.
+descriptor_type: "service_deployment_descriptor"
+
+# Unique identifier of this descriptor instance.
+descriptor_id: "service_deployment_descriptor-01"
+
+# Unique identifier of the candidate deployment option.
+deployment_id: "depl-01"
+
+# Reference to the service associated with this deployment option.
+service_ref: "svc-01"
+
+# Deployment role within the set of candidate alternatives generated for the service.
+deployment_role: "baseline_candidate"
+
+# Current lifecycle status of this deployment option.
+deployment_status: "candidate_for_feasibility_assessment"
+
+# ---------------------------------------------------------------------------
+# 1. Input descriptor references
+# ---------------------------------------------------------------------------
+# Descriptors used to construct this deployment option.
+input_descriptor_refs:
+
+  # Service descriptor defining the requested operation, objectives, endpoints, and policy references.
+  service_descriptor_ref: "service_descriptor-01"
+
+  # Quantum resource descriptor providing the selected quantum path, memory state,
+  # protocol capabilities, QPU state, and teleportation capability state.
+  quantum_resource_descriptor_ref: "quantum_resource_descriptor-01"
+
+  # Classical support descriptor providing the selected 6G/classical support path,
+  # support profiles, slice/QoS treatment, latency state, synchronization, and QPU-control reachability.
+  classical_support_descriptor_ref: "classical_support_descriptor-01"
+
+  # Service workflow descriptor defining the ordered quantum--classical procedure.
+  service_workflow_descriptor_ref: "service_workflow_descriptor-01"
+
+# ---------------------------------------------------------------------------
+# 2. Deployment objective bindings
+# ---------------------------------------------------------------------------
+# Service objectives used to evaluate and compare this deployment option.
+deployment_objective_refs:
+
+  # Number of input qubits to be teleported from QUE to the remote QPU.
+  requested_teleported_qubits_ref: "service_descriptor.operation_profile.resource_demand.input_qubits_to_teleport"
+
+  # Number of end-to-end Bell pairs required by this deployment option.
+  required_bell_pairs_ref: "service_descriptor.operation_profile.resource_demand.bell_pairs"
+
+  # Number of logical qubits required at the remote QPU after teleportation.
+  remote_qpu_logical_qubits_ref: "service_descriptor.operation_profile.resource_demand.remote_qpu_logical_qubits"
+
+  # Service-level fidelity target for reconstructed qubits at the remote QPU.
+  reconstructed_qubit_fidelity_target_ref: "service_descriptor.objective_profile.minimum_reconstructed_qubit_fidelity"
+
+  # Derived Bell-pair fidelity threshold used by the feasibility estimator.
+  equivalent_bell_pair_fidelity_threshold_ref: "service_descriptor.objective_profile.equivalent_bell_pair_fidelity_threshold_ref"
+
+  # Teleportation-stage completion deadline.
+  completion_deadline_ref: "service_descriptor.objective_profile.completion_deadline_us"
+
+  # Deadline semantics used by this deployment option.
+  completion_deadline_scope_ref: "service_descriptor.objective_profile.completion_deadline_scope"
+
+  # Target service reliability.
+  service_reliability_target_ref: "service_descriptor.objective_profile.service_reliability_target"
+
+  # Service priority used for candidate ranking and admission control.
+  priority_ref: "service_descriptor.objective_profile.priority"
+
+# ---------------------------------------------------------------------------
+# 3. Quantum resource option
+# ---------------------------------------------------------------------------
+# Quantum-domain resources and protocol choices selected by this deployment option.
+quantum_resource_option:
+
+  # Selected quantum path option.
+  qpath_choice: "qbs_assisted_single_qr_path"
+
+  # Reference to the selected quantum path.
+  qpath_ref: "qpath-01"
+
+  # Source endpoint holding the input qubits before teleportation.
+  source_endpoint_ref: "QUE-01"
+
+  # Quantum access node used by the source endpoint.
+  qbs_id: "QBS-01"
+
+  # Remote QPU selected as teleportation destination and execution node.
+  qpu_id: "QPU-01"
+
+  # Selected repeater configuration.
+  repeater_configuration:
+    repeater_count: 1
+    repeater_ids:
+      - "QR-01"
+
+  # Ordered quantum nodes used by this deployment.
+  selected_qpath_nodes:
+    - "QUE-01"
+    - "QBS-01"
+    - "QR-01"
+    - "QPU-01"
+
+  # Elementary links selected for Bell-pair generation before swapping.
+  selected_elementary_links:
+    - "QUE-01_QBS-01"
+    - "QBS-01_QR-01"
+    - "QR-01_QPU-01"
+
+  # Bell-pair generation strategy selected for this deployment.
+  bell_pair_generation_strategy:
+    strategy_id: "parallel_elementary_generation"
+    scheduling: "slot_based_parallel_attempts"
+    selected_parallel_attempts_per_elementary_link: 4
+    capability_ref: "quantum_resource_descriptor.available_capabilities.generation_capacity.parallel_attempts_supported_per_elementary_link"
+
+  # Entanglement swapping strategy selected for this deployment.
+  swapping_strategy:
+    swapping_active: true
+    swapping_depth: 2
+    swapping_nodes:
+      - "QBS-01"
+      - "QR-01"
+    capability_ref: "quantum_resource_descriptor.available_capabilities.protocol_capabilities.entanglement_swapping"
+
+  # Purification/distillation strategy selected for this baseline deployment.
+  purification_policy:
+    purification_active: false
+    selected_mode: "none"
+    supported_modes_ref: "quantum_resource_descriptor.available_capabilities.protocol_capabilities.distillation_modes"
+    activation_policy: "disabled_for_baseline_candidate"
+
+  # Teleportation strategy selected for this deployment.
+  teleportation_strategy:
+    selected_strategy: "delayed_multi_qubit_teleportation"
+    input_qubit_source_node_id: "QUE-01"
+    bell_state_measurement_node_id: "QUE-01"
+    teleported_qubit_destination_node_id: "QPU-01"
+    pauli_correction_node_id: "QPU-01"
+    remote_execution_node_id: "QPU-01"
+    execution_gate: "all_requested_qubits_available_at_qpu"
+    capability_ref: "quantum_resource_descriptor.available_capabilities.teleportation_context"
+
+  # Quantum-memory reservation requested by this deployment option.
+  memory_reservation_plan:
+
+    # Input qubits held at the source QUE before Bell-state measurements.
+    input_qubit_memory:
+      node_id: "QUE-01"
+      requested_memory_qubits_ref: "service_descriptor.operation_profile.resource_demand.input_qubits_to_teleport"
+      occupation_ref: "service_workflow_descriptor.resource_occupation.input-qubit-occ-01"
+
+    # Memory used for generated Bell-pair halves and intermediate entanglement resources.
+    entanglement_memory:
+      resource_scope_ref: "quantum_resource_descriptor.available_capabilities.quantum_memory_resources"
+      occupation_ref: "service_workflow_descriptor.resource_occupation.entanglement-mem-occ-01"
+
+    # Memory used at the remote QPU after teleportation.
+    remote_qpu_memory:
+      node_id: "QPU-01"
+      requested_logical_qubits_ref: "service_descriptor.operation_profile.resource_demand.remote_qpu_logical_qubits"
+      occupation_ref: "service_workflow_descriptor.resource_occupation.qpu-teleported-qubit-occ-01"
+
+  # Quantum-resource state references used by admission control.
+  quantum_state_refs:
+    link_quality_state_ref: "quantum_resource_descriptor.quality_and_validity.link_quality_state"
+    memory_state_ref: "quantum_resource_descriptor.quality_and_validity.memory_state"
+    teleportation_state_ref: "quantum_resource_descriptor.quality_and_validity.teleportation_state"
+    qpu_state_ref: "quantum_resource_descriptor.quality_and_validity.qpu_state"
+
+# ---------------------------------------------------------------------------
+# 4. Classical support option
+# ---------------------------------------------------------------------------
+# Classical/6G support configuration selected by this deployment option.
+classical_support_option:
+
+  # Selected classical support path.
+  support_path_choice: "edge_anchored_low_latency_support_path"
+  support_path_ref: "csup-path-01"
+  support_path_source_ref: "classical_support_descriptor.support_capabilities.connectivity_context.support_path_id"
+
+  # Selected support path endpoints.
+  source_endpoint_ref: "QUE-01"
+  destination_endpoint_ref: "QPU-01"
+  edge_control_function_ref: "edge-control-01"
+  qpu_control_endpoint_ref: "QPU-01"
+
+  # Selected critical support profile for timing-sensitive quantum-control messages.
+  critical_support_profile:
+    support_profile_ref: "critical_quantum_control"
+    support_treatment: "priority_low_latency"
+    network_slice_ref: "network-slice-low-latency-01"
+    pdu_session_context_ref: "pdu-session-context-quantum-control-01"
+    qos_flow_context_ref: "qos-flow-context-critical-control-01"
+    qos_monitoring_ref: "qf-qos-monitoring-control-critical-01"
+    pcc_policy_ref: "pcc-policy-critical-control-01"
+    selected_user_plane_anchor_ref: "upf-function-edge-01"
+
+  # Selected orchestration support profile for configuration, reservation, and adaptation commands.
+  orchestration_support_profile:
+    support_profile_ref: "orchestration_control"
+    support_treatment: "shared_orchestration_best_effort"
+    pdu_session_context_ref: "pdu-session-context-orchestration-01"
+    qos_flow_context_ref: "qos-flow-context-orchestration-01"
+    pcc_policy_ref: "pcc-policy-orchestration-01"
+    selected_user_plane_anchor_ref: "upf-function-edge-01"
+
+  # Message classes carried by the selected classical support option.
+  selected_message_classes:
+    - "heralding"
+    - "acknowledgments"
+    - "measurement_outcomes"
+    - "feed_forward"
+    - "orchestration_commands"
+
+  # Payload classes expected for the selected workflow.
+  selected_payload_types:
+    - "generation_outcomes"
+    - "swapping_outcomes"
+    - "teleportation_bell_state_measurement_outcomes"
+    - "pauli_correction_information"
+    - "pauli_frame_update"
+    - "remote_qpu_operation_preparation_command"
+    - "remote_operation_completion_ack"
+    - "operation_result_metadata"
+
+  # Latency, jitter, packet-loss, and synchronization envelope used for critical messages.
+  critical_support_envelope:
+    source_ref: "classical_support_descriptor.support_capabilities.support_profile_catalog.support_profiles.critical_quantum_control.profile_requirement_envelope"
+    latency_metric: "one_way_latency"
+    latency_statistic_type: "mean_p95_and_bound"
+    target_mean_one_way_latency_us: 10000
+    target_p95_one_way_latency_us: 23000
+    max_one_way_latency_us: 25000
+    max_jitter_us: 250
+    max_packet_loss_probability: 0.001
+    max_time_error_ns: 1000
+
+  # Edge control placement selected by this deployment option.
+  edge_control_placement:
+    selected_edge_location_id: "edge-01"
+    selected_edge_control_function_id: "edge-control-01"
+    selected_edge_data_network_ref: "edn-edge-01"
+    selected_edge_application_ref: "eas-function-quantum-control-01"
+    placement_mode: "serving_edge"
+
+  # Synchronization support selected by this deployment option.
+  synchronization_option:
+    sync_reservation: true
+    synchronization_support_ref: "synchronization-support-descriptor-01"
+    selected_sync_profile: "network_time_synchronization"
+    required_accuracy_ns: 1000
+
+  # QPU control endpoint selected by this deployment option.
+  qpu_control_endpoint_option:
+    qpu_control_endpoint_ref: "qpu-control-endpoint-01"
+    qpu_id: "QPU-01"
+    reachability_required: true
+    selected_usage:
+      - "teleportation_measurement_outcome_destination"
+      - "pauli_frame_update_destination"
+      - "remote_qpu_operation_control"
+      - "remote_operation_completion_reporting"
+
+  # Classical-support state references used by admission control.
+  classical_state_refs:
+    latency_state_ref: "classical_support_descriptor.state_and_validity.latency_state"
+    jitter_state_ref: "classical_support_descriptor.state_and_validity.jitter_state"
+    packet_loss_state_ref: "classical_support_descriptor.state_and_validity.packet_loss_state"
+    slice_qos_state_ref: "classical_support_descriptor.state_and_validity.slice_qos_state"
+    edge_cloud_state_ref: "classical_support_descriptor.state_and_validity.edge_cloud_state"
+    qpu_control_endpoint_state_ref: "classical_support_descriptor.state_and_validity.qpu_control_endpoint_state"
+    synchronization_state_ref: "classical_support_descriptor.state_and_validity.synchronization_state"
+
+# ---------------------------------------------------------------------------
+# 5. Workflow variant
+# ---------------------------------------------------------------------------
+# Workflow realization selected by this deployment option.
+workflow_variant:
+
+  # Selected workflow template.
+  workflow_template_ref: "remote_execution_via_multi_qubit_teleportation_template"
+
+  # Selected workflow descriptor instance.
+  workflow_descriptor_ref: "service_workflow_descriptor-01"
+
+  # Selected teleportation mode.
+  mode: "delayed_multi_qubit_teleportation"
+
+  # Selected execution gate.
+  execution_gate: "all_requested_qubits_available_at_qpu"
+
+  # Selected Bell-pair preparation mode.
+  entanglement_preparation_mode: "prepare_required_bell_pair_set_before_teleportation"
+
+  # Selected scheduling model.
+  scheduling: "slot_based_parallel_attempts"
+
+  # Retry policy selected for this deployment option.
+  retry_policy:
+    retry_policy_ref: "service_workflow_descriptor.retry_policy.retry-policy-01"
+    retry_budget: 2
+    retry_scope: "elementary_bell_pair_generation"
+    retry_trigger: "failed_heralding"
+
+  # Delivery target for the teleportation stage.
+  teleportation_delivery_target:
+    input_qubits_to_teleport_ref: "service_descriptor.operation_profile.resource_demand.input_qubits_to_teleport"
+    required_bell_pairs_ref: "service_descriptor.operation_profile.resource_demand.bell_pairs"
+    reconstructed_qubit_fidelity_target_ref: "service_descriptor.objective_profile.minimum_reconstructed_qubit_fidelity"
+    equivalent_bell_pair_fidelity_threshold_ref: "service_descriptor.objective_profile.equivalent_bell_pair_fidelity_threshold_ref"
+    deadline_us_ref: "service_descriptor.objective_profile.completion_deadline_us"
+    deadline_scope_ref: "service_descriptor.objective_profile.completion_deadline_scope"
+
+  # Remote execution target after teleportation.
+  remote_execution_target:
+    requested_operation_ref: "service_descriptor.operation_profile.requested_operation"
+    remote_qpu_ref: "service_descriptor.workflow_profile.remote_qpu_ref"
+    remote_qpu_logical_qubits_ref: "service_descriptor.operation_profile.resource_demand.remote_qpu_logical_qubits"
+    launch_condition: "all_requested_qubits_available_at_qpu"
+
+  # Workflow steps selected from the workflow descriptor.
+  selected_workflow_steps:
+    - "cfg-01"
+    - "gen-01"
+    - "herald-01"
+    - "mem-start-01"
+    - "swap-01"
+    - "swap-out-01"
+    - "bp-ready-01"
+    - "bsm-01"
+    - "tel-meas-out-01"
+    - "pauli-01"
+    - "qpu-ready-01"
+    - "qpu-exec-01"
+    - "result-ack-01"
+
+# ---------------------------------------------------------------------------
+# 6. Reservation and orchestration plan
+# ---------------------------------------------------------------------------
+# Resources and control actions that the orchestrator will reserve or configure
+# if this deployment option is admitted.
+reservation_and_orchestration_plan:
+
+  # Quantum-domain reservations requested by this deployment option.
+  quantum_reservations:
+    - reservation_type: "quantum_path"
+      resource_ref: "qpath-01"
+
+    - reservation_type: "quantum_memory"
+      resource_ref: "quantum_resource_descriptor.available_capabilities.quantum_memory_resources"
+
+    - reservation_type: "remote_qpu_capacity"
+      resource_ref: "quantum_resource_descriptor.quality_and_validity.qpu_state"
+
+    - reservation_type: "teleportation_capability"
+      resource_ref: "quantum_resource_descriptor.quality_and_validity.teleportation_state"
+
+  # Classical/6G support reservations requested by this deployment option.
+  classical_support_reservations:
+    - reservation_type: "critical_support_profile"
+      resource_ref: "critical_quantum_control"
+
+    - reservation_type: "network_slice_or_qos_flow"
+      resource_ref: "qos-flow-context-critical-control-01"
+
+    - reservation_type: "pdu_session_context"
+      resource_ref: "pdu-session-context-quantum-control-01"
+
+    - reservation_type: "edge_control_function"
+      resource_ref: "edge-control-01"
+
+    - reservation_type: "synchronization_support"
+      resource_ref: "synchronization-support-descriptor-01"
+
+    - reservation_type: "qpu_control_endpoint"
+      resource_ref: "qpu-control-endpoint-01"
+
+  # Main orchestration actions required to enforce this deployment.
+  orchestration_actions:
+    - "reserve_quantum_path"
+    - "reserve_quantum_memory"
+    - "reserve_remote_qpu_capacity"
+    - "reserve_critical_classical_support_profile"
+    - "configure_qos_flow_for_critical_quantum_control"
+    - "activate_qos_monitoring"
+    - "reserve_edge_control_function"
+    - "reserve_synchronization_support"
+    - "verify_qpu_control_endpoint_reachability"
+    - "start_workflow_execution"
+
+# ---------------------------------------------------------------------------
+# 7. Feasibility assessment input
+# ---------------------------------------------------------------------------
+# Inputs passed to admission control to create the feasibility descriptor.
+feasibility_assessment_input:
+
+  # Feasibility descriptor to be generated for this deployment option.
+  expected_feasibility_descriptor_id: "feasibility_descriptor-01"
+
+  # Estimator selected for this deployment option.
+  selected_estimator:
+    estimator_type: "simulation_or_telemetry_calibrated_model"
+    estimator_ref: "teleportation_feasibility_estimator_v0.1"
+
+  # Main feasibility metrics to be computed.
+  requested_feasibility_metrics:
+    - "predicted_reconstructed_qubit_fidelity"
+    - "equivalent_bell_pair_fidelity_threshold"
+    - "predicted_completion_time_us"
+    - "completion_time_margin_us"
+    - "completion_time_slack_us"
+    - "predicted_service_reliability"
+    - "service_reliability_margin"
+    - "memory_coherence_margin_us"
+    - "memory_coherence_slack_us"
+    - "classical_support_latency_margin_us"
+    - "classical_support_latency_slack_us"
+    - "packet_loss_margin"
+    - "synchronization_margin_ns"
+    - "bottleneck_resources"
+    - "validity_interval"
+    - "confidence_level"
+    - "admission_status"
+
+  # Descriptor sections used by the feasibility estimator.
+  evidence_input_refs:
+    - "service_descriptor.objective_profile"
+    - "service_descriptor.operation_profile.resource_demand"
+    - "quantum_resource_descriptor.available_capabilities"
+    - "quantum_resource_descriptor.quality_and_validity"
+    - "classical_support_descriptor.support_capabilities"
+    - "classical_support_descriptor.state_and_validity"
+    - "service_workflow_descriptor.workflow_execution_policy"
+    - "service_workflow_descriptor.operation_sequence"
+    - "service_workflow_descriptor.resource_occupation"
+    - "service_workflow_descriptor.retry_policy"
+
+# ---------------------------------------------------------------------------
+# 8. Candidate validity and ranking
+# ---------------------------------------------------------------------------
+# Validity and ranking metadata for this deployment option.
+candidate_validity:
+
+  # Time at which this deployment option was generated.
+  generated_at_utc: "2026-06-09T00:00:00Z"
+
+  # Function that generated this candidate.
+  generated_by: "service_deployment_option_generation"
+
+  # Validity state before admission-control evaluation.
+  pre_admission_validity_status: "pending_feasibility_assessment"
+
+  # Candidate ranking hint used before feasibility assessment.
+  candidate_rank_hint: 1
+
+  # Criteria used to rank this candidate among alternatives.
+  ranking_criteria:
+    - "uses_selected_single_qr_quantum_path"
+    - "uses_maximum_available_parallel_attempts"
+    - "keeps_purification_disabled_for_baseline"
+    - "uses_priority_low_latency_critical_support"
+    - "uses_edge_control_placement"
+    - "uses_synchronization_support"
+    - "uses_remote_qpu_execution_gate"
+
+# ---------------------------------------------------------------------------
+# 9. Ownership and update rules
+# ---------------------------------------------------------------------------
+ownership:
+
+  # Management function responsible for generating and maintaining candidate deployment options.
+  owner: "service_deployment_option_generation"
+
+  # Information sources used to populate this deployment descriptor.
+  data_sources:
+    - "service_descriptor"
+    - "quantum_resource_descriptor"
+    - "classical_support_descriptor"
+    - "service_workflow_descriptor"
+    - "service_procedure_catalogue"
+    - "operator_policy_configuration"
+
+  update_semantics:
+
+    # Events that trigger deployment descriptor generation or refresh.
+    triggers:
+      - "deployment_option_generation"
+      - "candidate_replanning"
+      - "service_descriptor_update"
+      - "quantum_resource_descriptor_update"
+      - "classical_support_descriptor_update"
+      - "service_workflow_descriptor_update"
+      - "operator_policy_update"
+      - "feasibility_reassessment_request"
+
+    # Descriptor sections that may be refreshed during planning or replanning.
+    refreshable_sections:
+      - "deployment_objective_refs"
+      - "quantum_resource_option"
+      - "classical_support_option"
+      - "workflow_variant"
+      - "reservation_and_orchestration_plan"
+      - "feasibility_assessment_input"
+      - "candidate_validity"
+
+    # Descriptor sections writable by the deployment option generation function.
+    writable_sections:
+      - "deployment_role"
+      - "deployment_status"
+      - "quantum_resource_option"
+      - "classical_support_option"
+      - "workflow_variant"
+      - "reservation_and_orchestration_plan"
+      - "feasibility_assessment_input"
+      - "candidate_validity"

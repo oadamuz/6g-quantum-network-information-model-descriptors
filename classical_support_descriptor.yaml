@@ -1,0 +1,1090 @@
+# Version of the descriptor structure.
+# Example values: "0.1-draft", "1.0".
+# This field allows future schema changes while preserving compatibility.
+schema_version: "0.1-draft"
+
+# Type of descriptor.
+# Example values in the proposed information model:
+# "service_descriptor", "quantum_resource_descriptor", "classical_support_descriptor",
+# "service_workflow_descriptor", "service_deployment_descriptor", "feasibility_descriptor".
+descriptor_type: "classical_support_descriptor"
+
+# Unique identifier of this descriptor instance.
+# The value is local to the management system or descriptor repository.
+descriptor_id: "classical_support_descriptor-01"
+
+# Reference to the service descriptor associated with this classical-support context.
+# The referenced service descriptor defines the quantum-service request and its requirements.
+service_ref: "svc-01"
+
+# Classical/6G support capabilities and configurable options available for the requested service.
+support_capabilities:
+
+  # ---------------------------------------------------------------------------
+  # 1. Connectivity context
+  # ---------------------------------------------------------------------------
+  # Functional classical support path used by the quantum service.
+  # Detailed 3GPP interfaces such as N3 or N6 are represented, if required,
+  # in the external 3GPP/6G information-model instances referenced later.
+  connectivity_context:
+
+    # Human-readable summary of the classical support path.
+    # Format used here: source--access_node--user_plane_anchor--edge_control_function--remote_qpu_control_endpoint.
+    # This field is descriptive; the detailed managed resources are referenced below.
+    topology: "QUE--QBS/gNB--UPF--edge_control_function--QPU-control-endpoint"
+
+    # Identifier of the selected classical support path.
+    # Example values: "csup-path-01", "csup-path-edge-02".
+    # If several support paths are available, they should be represented in a
+    # separate candidate-path list or deployment descriptor. This descriptor
+    # contains only the path selected for the example service.
+    support_path_id: "csup-path-01"
+
+    # Service endpoint whose classical-control traffic enters the 3GPP/6G support network.
+    # Example values: "QUE-01", "QPU-01".
+    source_endpoint_ref: "QUE-01"
+
+    # Remote QPU endpoint receiving teleportation measurement outcomes,
+    # Pauli-frame updates, control messages, and operation-completion acknowledgments.
+    destination_endpoint_ref: "QPU-01"
+
+    # Integrated access node providing both quantum access and classical/6G support access.
+    # access_node_id is a local identifier of the access node.
+    # access_node_type describes the role of the node in the hybrid quantum-classical infrastructure.
+    access_node_id: "QBS-01"
+    access_node_type: "integrated_quantum_classical_access_node"
+
+    # Classical role exposed by the access node.
+    # Example values: "gNB", "non_3gpp_access", "fixed_access_gateway".
+    # In this example, QBS-01 exposes a gNB-like role for the classical support plane.
+    exposed_3gpp_role: "gNB"
+
+    # Assumed NG-RAN split for this example.
+    # Example values: "non_split_gnb", "cu_du_split", "cu_cp_cu_up_du_split".
+    # The selected value determines which external NG-RAN managed objects are referenced.
+    selected_ng_ran_split: "cu_cp_cu_up_du_split"
+
+    # Classical support link between the QUE and the integrated QBS/gNB access node.
+    # The detailed transport attributes of this link are external to this descriptor.
+    classical_access_link_id: "QUE-01_QBS-01"
+
+    # Selected user-plane anchor for the classical support traffic.
+    # upf_id is the local identifier used by this descriptor.
+    # upf_role explains why this UPF is relevant for the service.
+    upf_id: "UPF-edge-01"
+    upf_role: "edge_user_plane_anchor"
+
+    # Edge-hosted function used to coordinate timing-sensitive quantum-classical workflow steps.
+    # edge_location_id identifies the selected edge site.
+    # edge_control_function_id is a local service identifier used by this descriptor.
+    edge_location_id: "edge-01"
+    edge_control_function_id: "edge-control-01"
+
+    # Remote QPU control endpoint reached through the selected classical support path.
+    # This endpoint receives teleportation measurement outcomes and supports remote-operation control.
+    qpu_control_endpoint_id: "QPU-01"
+    qpu_control_endpoint_role: "teleportation_outcome_destination_and_remote_execution_endpoint"
+
+    # Functional nodes traversed by the selected classical support path.
+    # node_type values used in this descriptor:
+    # "QUE", "integrated_qbs_gnb", "UPF", "edge_control_function", "remote_qpu_control_endpoint".
+    # role gives the function of each node in the support path.
+    support_path_nodes:
+      - node_id: "QUE-01"
+        node_type: "QUE"
+        role: "classical_support_traffic_source_and_teleportation_measurement_node"
+
+      - node_id: "QBS-01"
+        node_type: "integrated_qbs_gnb"
+        role: "integrated_quantum_classical_access"
+
+      - node_id: "UPF-edge-01"
+        node_type: "UPF"
+        role: "low_latency_user_plane_anchor"
+
+      - node_id: "edge-control-01"
+        node_type: "edge_control_function"
+        role: "quantum_workflow_control"
+
+      - node_id: "QPU-01"
+        node_type: "remote_qpu_control_endpoint"
+        role: "teleportation_outcome_destination_pauli_update_node_and_remote_execution_endpoint"
+
+  # ---------------------------------------------------------------------------
+  # 2. External 3GPP/6G managed-resource context
+  # ---------------------------------------------------------------------------
+  # Concrete references to external 3GPP/6G information-model instances used by
+  # the classical support path.
+  #
+  # Relevant 3GPP specifications:
+  # - 3GPP TS 28.541: 5G Network Resource Model (NRM), including NR/NG-RAN,
+  #   5GC, Network Slice, QoS monitoring, 5QI mapping, and related managed objects.
+  # - 3GPP TS 28.532: Generic management services and managed-object instances.
+  # - 3GPP TS 28.538: Edge Computing Management and Edge NRM concepts.
+  #
+  # managed_object_class uses class names from external 3GPP/6G information models.
+  # managed_object_dn follows the 3GPP managed-object identification style based on
+  # Distinguished Names. The DN values below are illustrative examples for this paper.
+  # Concrete names are operator- or deployment-specific.
+  managed_resource_context:
+
+    # Access-side managed resources.
+    access_resource_context:
+
+      # External NR/NG-RAN NRM instance containing the managed objects used by QBS-01.
+      # 3GPP TS 28.541 defines NR/NG-RAN NRM classes such as GNBCUCPFunction,
+      # GNBCUUPFunction, GNBDUFunction, NRCellCU, and NRCellDU.
+      ng_ran_nrm_ref: "ng-ran-nrm-descriptor-01"
+
+      # Selected split used to determine the relevant NG-RAN managed objects.
+      # Example values: "non_split_gnb", "cu_du_split", "cu_cp_cu_up_du_split".
+      # The value used here assumes separate CU-CP, CU-UP, and DU managed objects.
+      selected_ng_ran_split: "cu_cp_cu_up_du_split"
+
+      # Concrete external NR/NG-RAN NRM managed objects associated with QBS-01.
+      # managed_object_ref is a local reference used by this descriptor.
+      # managed_object_class is the external NRM class.
+      # managed_object_dn identifies the external managed-object instance.
+      # role gives the function of the managed object in this classical support context.
+      ng_ran_managed_object_refs:
+        - managed_object_ref: "gnb-cu-cp-function-qbs-01"
+          managed_object_class: "GNBCUCPFunction"
+          managed_object_dn: "SubNetwork=sn-01,ManagedElement=qbs-01,GNBCUCPFunction=gnb-cu-cp-qbs-01"
+          role: "control_plane_central_unit"
+
+        - managed_object_ref: "gnb-cu-up-function-qbs-01"
+          managed_object_class: "GNBCUUPFunction"
+          managed_object_dn: "SubNetwork=sn-01,ManagedElement=qbs-01,GNBCUUPFunction=gnb-cu-up-qbs-01"
+          role: "user_plane_central_unit"
+
+        - managed_object_ref: "gnb-du-function-qbs-01"
+          managed_object_class: "GNBDUFunction"
+          managed_object_dn: "SubNetwork=sn-01,ManagedElement=qbs-01,GNBDUFunction=gnb-du-qbs-01"
+          role: "distributed_unit"
+
+        - managed_object_ref: "nr-cell-cu-qbs-01"
+          managed_object_class: "NRCellCU"
+          managed_object_dn: "SubNetwork=sn-01,ManagedElement=qbs-01,GNBCUCPFunction=gnb-cu-cp-qbs-01,NRCellCU=nr-cell-cu-qbs-01"
+          role: "cu_side_nr_cell"
+
+        - managed_object_ref: "nr-cell-du-qbs-01"
+          managed_object_class: "NRCellDU"
+          managed_object_dn: "SubNetwork=sn-01,ManagedElement=qbs-01,GNBDUFunction=gnb-du-qbs-01,NRCellDU=nr-cell-du-qbs-01"
+          role: "du_side_nr_cell"
+
+    # 5GC user-plane managed resources.
+    user_plane_resource_context:
+
+      # External 5GC NRM instance containing the selected UPF managed object.
+      # 3GPP TS 28.541 defines 5GC NRM classes such as UPFFunction.
+      fivegc_nrm_ref: "5gc-nrm-descriptor-01"
+
+      # Concrete UPF managed-object instance selected as edge user-plane anchor.
+      # The UPF anchors the classical support traffic toward the selected edge location
+      # and the remote QPU control endpoint.
+      upf_managed_object_ref:
+        managed_object_ref: "upf-function-edge-01"
+        managed_object_class: "UPFFunction"
+        managed_object_dn: "SubNetwork=sn-01,ManagedElement=5gc-01,UPFFunction=upf-edge-01"
+        role: "edge_user_plane_anchor"
+
+    # Edge managed resources.
+    edge_resource_context:
+
+      # External 3GPP Edge Computing Management / Edge NRM instance.
+      # 3GPP TS 28.538 defines Edge Computing Management.
+      # In this descriptor, the quantum workflow control logic is represented as an
+      # edge-hosted application/control service mapped to an EASFunction managed object.
+      edge_computing_management_ref: "edge-computing-management-descriptor-01"
+
+      # Edge data network hosting the quantum workflow control application.
+      # EdgeDataNetwork is used here as the external edge-computing managed object class.
+      edge_data_network_ref:
+        managed_object_ref: "edn-edge-01"
+        managed_object_class: "EdgeDataNetwork"
+        managed_object_dn: "SubNetwork=sn-01,EdgeDataNetwork=edn-edge-01"
+        role: "edge_data_network_hosting_quantum_control"
+
+      # Edge application used as the implementation of edge-control-01.
+      # EASFunction is the external edge-computing managed object class.
+      # edge-control-01 is the local service identifier used in this descriptor.
+      edge_control_application_ref:
+        managed_object_ref: "eas-function-quantum-control-01"
+        managed_object_class: "EASFunction"
+        managed_object_dn: "SubNetwork=sn-01,EdgeDataNetwork=edn-edge-01,EASFunction=eas-quantum-control-01"
+        local_service_id: "edge-control-01"
+        role: "quantum_workflow_control"
+
+    # Remote QPU control endpoint context.
+    qpu_control_resource_context:
+
+      # Local descriptor reference for the remote QPU control endpoint.
+      qpu_control_endpoint_ref: "qpu-control-endpoint-01"
+
+      # Remote QPU associated with this control endpoint.
+      qpu_id: "QPU-01"
+
+      # Logical role of the QPU control endpoint in the classical support path.
+      role: "teleportation_measurement_outcome_destination_and_remote_operation_control"
+
+      # External managed object or operator-specific endpoint descriptor.
+      managed_object_ref: "qpu-control-endpoint-qpu-01"
+      managed_object_class: "OperatorSpecificQPUControlEndpoint"
+      managed_object_dn: "SubNetwork=sn-01,QuantumDomain=qd-01,QPU=QPU-01,ControlEndpoint=qpu-control-endpoint-01"
+
+  # ---------------------------------------------------------------------------
+  # 3. Classical message classes
+  # ---------------------------------------------------------------------------
+  # Quantum-classical message classes carried by the classical support path.
+  # This section declares message requirements at two levels:
+  # - Qualitative labels for fast classification by orchestration functions.
+  # - Quantitative bounds for machine-processable admission and deployment decisions.
+  #
+  # The values below represent a realistic edge-anchored private 5G/6G support
+  # deployment. Critical quantum-control traffic is aligned with the manuscript
+  # example: the feasibility evidence uses a 23 ms high-percentile latency state
+  # and a 25 ms one-way latency bound for critical support traffic.
+  # Orchestration traffic uses looser bounds.
+  #
+  # The fields in this section are part of the proposed quantum-service descriptor.
+  # Relevant 3GPP support mechanisms are referenced later in support_profile_catalog.
+  #
+  # Relevant 3GPP specifications for the support realization:
+  # - 3GPP TS 23.501: 5G system architecture, PDU sessions, QoS flows, QFI,
+  #   5QI, UPF, and 5GS time-synchronization support.
+  # - 3GPP TS 23.503: Policy and Charging Control (PCC), policy control,
+  #   and service-data-flow treatment.
+  #
+  # Field meanings used in this section:
+  # - message_type identifies the class of classical message used by the quantum workflow.
+  #   Values used here: "heralding", "acknowledgments", "measurement_outcomes",
+  #   "feed_forward", "orchestration_commands".
+  # - workflow_stage identifies the quantum-service stage where the message is used.
+  #   Values used here: "entanglement_generation", "workflow_coordination",
+  #   "measurement_and_correction", "conditional_quantum_operation",
+  #   "service_configuration_and_adaptation".
+  # - direction identifies the logical direction of the message.
+  #   Values used here: "quantum_nodes_to_control_function", "bidirectional",
+  #   "measurement_node_to_correction_node", "control_function_to_quantum_node",
+  #   "service_orchestrator_to_infrastructure".
+  # - typical_sources and typical_destinations list representative endpoint IDs.
+  # - timing_sensitivity expresses delay sensitivity. Example values: "low", "medium",
+  #   "high", "critical".
+  # - loss_sensitivity expresses tolerance to message loss. Example values: "low",
+  #   "medium", "high", "critical".
+  # - ordering_required indicates whether the receiver must process messages in order.
+  # - synchronization_relevance indicates whether time synchronization matters for
+  #   correct workflow execution. Example values: "none", "low", "medium", "high".
+  # - latency_requirement defines one-way latency requirements using explicit statistics.
+  # - jitter_requirement defines jitter bounds for the message class.
+  # - loss_requirement defines packet-loss bounds for the message class.
+  # - synchronization_requirement defines the required time-synchronization accuracy.
+  # - required_support_profile points to a support_profile_id defined in
+  #   support_profile_catalog.
+  #
+  # Slice, PDU-session, QoS-flow, QoS-monitoring, and PCC-policy mappings are
+  # centralized in support_profile_catalog.
+  traffic_support:
+
+    supported_message_classes:
+
+      - message_type: "heralding"
+        workflow_stage: "entanglement_generation"
+        direction: "quantum_nodes_to_control_function"
+        typical_sources:
+          - "QBS-01"
+          - "QR-01"
+          - "QPU-01"
+        typical_destinations:
+          - "edge-control-01"
+          - "QUE-01"
+        timing_sensitivity: "critical"
+        loss_sensitivity: "critical"
+        ordering_required: true
+        synchronization_relevance: "high"
+
+        # One-way latency requirement for this message class.
+        # Unit: microseconds.
+        # target_mean_one_way_latency_us captures the desired typical delay.
+        # target_p95_one_way_latency_us captures the desired high-percentile delay.
+        # max_one_way_latency_us is the service bound used for admission checks.
+        latency_requirement:
+          latency_metric: "one_way_latency"
+          statistic_type: "mean_p95_and_bound"
+          target_mean_one_way_latency_us: 100000
+          target_p95_one_way_latency_us: 23000
+          max_one_way_latency_us: 25000
+
+        # Jitter requirement for this message class.
+        # Unit: microseconds.
+        jitter_requirement:
+          max_jitter_us: 250
+
+        # Packet-loss requirement for this message class.
+        # Values are probabilities in the [0, 1] range.
+        loss_requirement:
+          max_packet_loss_probability: 0.001
+
+        # Time-synchronization requirement for this message class.
+        # Unit: nanoseconds.
+        synchronization_requirement:
+          max_time_error_ns: 1000
+
+        required_support_profile: "critical_quantum_control"
+        description: "Classical notifications reporting elementary Bell-pair generation outcomes on the involved quantum links."
+
+      - message_type: "acknowledgments"
+        workflow_stage: "workflow_coordination"
+        direction: "bidirectional"
+        typical_sources:
+          - "QUE-01"
+          - "QBS-01"
+          - "QR-01"
+          - "QPU-01"
+          - "edge-control-01"
+        typical_destinations:
+          - "QUE-01"
+          - "QBS-01"
+          - "QR-01"
+          - "QPU-01"
+          - "edge-control-01"
+        timing_sensitivity: "critical"
+        loss_sensitivity: "critical"
+        ordering_required: true
+        synchronization_relevance: "medium"
+
+        latency_requirement:
+          latency_metric: "one_way_latency"
+          statistic_type: "mean_p95_and_bound"
+          target_mean_one_way_latency_us: 10000
+          target_p95_one_way_latency_us: 23000
+          max_one_way_latency_us: 25000
+
+        jitter_requirement:
+          max_jitter_us: 250
+
+        loss_requirement:
+          max_packet_loss_probability: 0.001
+
+        synchronization_requirement:
+          max_time_error_ns: 10000
+
+        required_support_profile: "critical_quantum_control"
+        description: "Acknowledgment messages confirming generation, swapping, teleportation, remote-QPU execution, and workflow-progress events."
+
+      - message_type: "measurement_outcomes"
+        workflow_stage: "measurement_and_correction"
+        direction: "measurement_node_to_correction_node"
+        typical_sources:
+          - "QUE-01"
+          - "QBS-01"
+          - "QR-01"
+        typical_destinations:
+          - "QPU-01"
+          - "edge-control-01"
+        timing_sensitivity: "critical"
+        loss_sensitivity: "critical"
+        ordering_required: true
+        synchronization_relevance: "high"
+
+        latency_requirement:
+          latency_metric: "one_way_latency"
+          statistic_type: "mean_p95_and_bound"
+          target_mean_one_way_latency_us: 100000
+          target_p95_one_way_latency_us: 23000
+          max_one_way_latency_us: 25000
+
+        jitter_requirement:
+          max_jitter_us: 250
+
+        loss_requirement:
+          max_packet_loss_probability: 0.001
+
+        synchronization_requirement:
+          max_time_error_ns: 1000
+
+        required_support_profile: "critical_quantum_control"
+        description: "Classical messages carrying entanglement-swapping outcomes, teleportation Bell-state measurement outcomes, or intermediate measurement results required for state reconstruction."
+
+      - message_type: "feed_forward"
+        workflow_stage: "conditional_quantum_operation"
+        direction: "measurement_node_or_control_function_to_correction_node"
+        typical_sources:
+          - "QUE-01"
+          - "edge-control-01"
+        typical_destinations:
+          - "QPU-01"
+          - "QBS-01"
+          - "QR-01"
+        timing_sensitivity: "critical"
+        loss_sensitivity: "critical"
+        ordering_required: true
+        synchronization_relevance: "high"
+
+        latency_requirement:
+          latency_metric: "one_way_latency"
+          statistic_type: "mean_p95_and_bound"
+          target_mean_one_way_latency_us: 100000
+          target_p95_one_way_latency_us: 23000
+          max_one_way_latency_us: 25000
+
+        jitter_requirement:
+          max_jitter_us: 250
+
+        loss_requirement:
+          max_packet_loss_probability: 0.001
+
+        synchronization_requirement:
+          max_time_error_ns: 1000
+
+        required_support_profile: "critical_quantum_control"
+        description: "Timing-sensitive classical control messages used to trigger conditional quantum operations, Pauli corrections, or Pauli-frame updates at the target quantum node."
+
+      - message_type: "orchestration_commands"
+        workflow_stage: "service_configuration_and_adaptation"
+        direction: "service_orchestrator_to_infrastructure"
+        typical_sources:
+          - "service_orchestrator"
+          - "edge-control-01"
+        typical_destinations:
+          - "QBS-01"
+          - "QR-01"
+          - "QPU-01"
+          - "UPF-edge-01"
+          - "edge-control-01"
+        timing_sensitivity: "high"
+        loss_sensitivity: "high"
+        ordering_required: true
+        synchronization_relevance: "medium"
+
+        latency_requirement:
+          latency_metric: "one_way_latency"
+          statistic_type: "mean_p95_and_bound"
+          target_mean_one_way_latency_us: 100000
+          target_p95_one_way_latency_us: 30000
+          max_one_way_latency_us: 50000
+
+        jitter_requirement:
+          max_jitter_us: 10000
+
+        loss_requirement:
+          max_packet_loss_probability: 0.001
+
+        synchronization_requirement:
+          max_time_error_ns: 1000000
+
+        required_support_profile: "orchestration_control"
+
+        # Alternative support profiles that may be used for this message class.
+        # Example use: orchestration commands may be elevated to the critical profile
+        # when service setup or adaptation is time-sensitive.
+        alternative_support_profiles:
+          - "critical_quantum_control"
+
+        description: "Service-orchestration commands used to configure, reserve, start, monitor, adapt, or prepare the remote QPU operation."
+
+  # ---------------------------------------------------------------------------
+  # 4. 3GPP/6G support profile catalog
+  # ---------------------------------------------------------------------------
+  # Available support profiles for the message classes above.
+  # Each support profile maps abstract quantum-service requirements to external
+  # 3GPP/6G support contexts: network slice, PDU session, QoS flow,
+  # QoS monitoring, PCC/policy control, and selected UPF anchor.
+  #
+  # Relevant 3GPP specifications:
+  # - 3GPP TS 28.541: Network Slice NRM, NetworkSlice, NetworkSliceSubnet,
+  #   SliceProfile, ServiceProfile, QoS monitoring objects, 5QI mapping objects,
+  #   and PCC-related managed objects in the 5G NRM.
+  # - 3GPP TS 23.501: 5G system architecture, PDU sessions, QoS flows, QFI,
+  #   5QI, UPF, and 5GS time-synchronization support.
+  # - 3GPP TS 23.503: Policy and Charging Control (PCC), policy control,
+  #   and service-data-flow treatment.
+  #
+  # The deployment descriptor selects and reserves the final support profile.
+  support_profile_catalog:
+
+    # Capabilities exposed by the 3GPP/6G support domain.
+    # Boolean values indicate whether the support domain can expose the corresponding
+    # mechanism to the quantum-service orchestration layer.
+    network_slice_supported: true
+    s_nssai_selection_supported: true
+    pdu_session_supported: true
+    dedicated_qos_flow_supported: true
+    shared_orchestration_context_supported: true
+    qos_flow_identifier_supported: true
+    five_qi_based_treatment_supported: true
+    arp_based_priority_supported: true
+    pcc_rule_based_policy_supported: true
+    qos_monitoring_supported: true
+
+    support_profiles:
+
+      - support_profile_id: "critical_quantum_control"
+        support_treatment: "priority_low_latency"
+
+        # Message classes that require this support profile.
+        intended_message_types:
+          - "heralding"
+          - "acknowledgments"
+          - "measurement_outcomes"
+          - "feed_forward"
+
+        # Quantitative envelope guaranteed or targeted by this support profile.
+        # The values satisfy the strictest requirements of the intended message classes.
+        # Unit for latency and jitter values: microseconds.
+        # Unit for synchronization value: nanoseconds.
+        profile_requirement_envelope:
+          latency_metric: "one_way_latency"
+          latency_statistic_type: "mean_p95_and_bound"
+          target_mean_one_way_latency_us: 100000
+          target_p95_one_way_latency_us: 23000
+          max_one_way_latency_us: 25000
+          max_jitter_us: 250
+          max_packet_loss_probability: 0.001
+          max_time_error_ns: 1000
+
+        # External support contexts used by this profile.
+        # network_slice_ref and network_slice_subnet_refs point to the selected
+        # network-slice resources.
+        # pdu_session_context_ref points to the PDU-session context used for the traffic.
+        # qos_flow_context_ref points to the QoS-flow context, including QFI/5QI treatment.
+        # qos_monitoring_ref points to the selected QoS-monitoring control context.
+        # pcc_policy_ref points to the PCC/policy-control context.
+        # selected_user_plane_anchor_ref points to the UPF managed object selected as anchor.
+        network_slice_ref: "network-slice-low-latency-01"
+        network_slice_subnet_refs:
+          - "network-slice-subnet-ran-low-latency-01"
+          - "network-slice-subnet-core-low-latency-01"
+        pdu_session_context_ref: "pdu-session-context-quantum-control-01"
+        qos_flow_context_ref: "qos-flow-context-critical-control-01"
+        qos_monitoring_ref: "qf-qos-monitoring-control-critical-01"
+        pcc_policy_ref: "pcc-policy-critical-control-01"
+        selected_user_plane_anchor_ref: "upf-function-edge-01"
+
+        # External Network Slice NRM managed object associated with this support profile.
+        network_slice_managed_object_ref:
+          managed_object_ref: "network-slice-low-latency-01"
+          managed_object_class: "NetworkSlice"
+          managed_object_dn: "SubNetwork=sn-01,NetworkSlice=network-slice-low-latency-01"
+          role: "end_to_end_support_slice"
+
+        # External Network Slice Subnet NRM managed objects associated with this profile.
+        # The example separates the RAN slice subnet and the core slice subnet.
+        network_slice_subnet_managed_object_refs:
+          - managed_object_ref: "network-slice-subnet-ran-low-latency-01"
+            managed_object_class: "NetworkSliceSubnet"
+            managed_object_dn: "SubNetwork=sn-01,NetworkSliceSubnet=nss-ran-low-latency-01"
+            role: "ran_slice_subnet"
+
+          - managed_object_ref: "network-slice-subnet-core-low-latency-01"
+            managed_object_class: "NetworkSliceSubnet"
+            managed_object_dn: "SubNetwork=sn-01,NetworkSliceSubnet=nss-core-low-latency-01"
+            role: "core_slice_subnet"
+
+        # Slice profile associated with the support treatment.
+        slice_profile_managed_object_ref:
+          managed_object_ref: "slice-profile-low-latency-01"
+          managed_object_class: "SliceProfile"
+          managed_object_dn: "SubNetwork=sn-01,SliceProfile=slice-profile-low-latency-01"
+          role: "low_latency_slice_profile"
+
+        # Service profile associated with the quantum-control support treatment.
+        service_profile_managed_object_ref:
+          managed_object_ref: "service-profile-quantum-control-01"
+          managed_object_class: "ServiceProfile"
+          managed_object_dn: "SubNetwork=sn-01,ServiceProfile=service-profile-quantum-control-01"
+          role: "quantum_control_service_profile"
+
+        # Compact local summary of the PDU-session support context.
+        # pdu_session_type examples in 5GS include "IP", "Ethernet", and "Unstructured".
+        # Detailed PDU-session attributes are external to this descriptor.
+        pdu_session_summary:
+          pdu_session_type: "IP"
+          traffic_usage: "quantum_classical_support"
+
+        # Compact local summary of the QoS-flow support context.
+        # qfi_ref identifies the QoS Flow Identifier context.
+        # five_qi_profile_ref identifies the selected 5QI treatment profile.
+        # arp_profile_ref identifies the allocation and retention priority profile.
+        # Detailed QoS-flow attributes are external to this descriptor.
+        qos_flow_summary:
+          qfi_ref: "qfi-critical-control-01"
+          five_qi_profile_ref: "5qi-profile-critical-control-01"
+          arp_profile_ref: "arp-profile-high-priority-01"
+          qos_flow_usage: "critical_quantum_control_messages"
+
+        # External QoS-monitoring managed objects associated with this profile.
+        # QFQoSMonitoringControl refers to QoS monitoring at QoS-flow level.
+        # GtpUPathQoSMonitoringControl refers to monitoring on the GTP-U path.
+        qos_monitoring_managed_object_refs:
+          - managed_object_ref: "qf-qos-monitoring-control-critical-01"
+            managed_object_class: "QFQoSMonitoringControl"
+            managed_object_dn: "SubNetwork=sn-01,ManagedElement=5gc-01,UPFFunction=upf-edge-01,QFQoSMonitoringControl=qf-qos-monitoring-critical-01"
+            role: "qos_flow_monitoring"
+
+          - managed_object_ref: "gtpu-path-qos-monitoring-control-edge-01"
+            managed_object_class: "GtpUPathQoSMonitoringControl"
+            managed_object_dn: "SubNetwork=sn-01,ManagedElement=5gc-01,UPFFunction=upf-edge-01,GtpUPathQoSMonitoringControl=gtpu-path-qos-edge-01"
+            role: "user_plane_path_qos_monitoring"
+
+        # External mapping object used to relate 5QI treatment to transport marking.
+        qos_mapping_managed_object_ref:
+          managed_object_ref: "fiveqi-dscp-mapping-critical-01"
+          managed_object_class: "FiveQiDscpMappingSet"
+          managed_object_dn: "SubNetwork=sn-01,ManagedElement=5gc-01,FiveQiDscpMappingSet=fiveqi-dscp-critical-01"
+          role: "fiveqi_to_transport_marking_mapping"
+
+        # External PCC/policy managed object associated with this support profile.
+        # The policy determines the treatment of the service data flow associated
+        # with the quantum-classical support traffic.
+        pcc_policy_managed_object_ref:
+          managed_object_ref: "pcc-rule-set-critical-control-01"
+          managed_object_class: "PredefinedPccRuleSet"
+          managed_object_dn: "SubNetwork=sn-01,ManagedElement=5gc-01,PredefinedPccRuleSet=pcc-critical-control-01"
+          role: "policy_control_for_critical_quantum_support_traffic"
+
+      - support_profile_id: "orchestration_control"
+        support_treatment: "shared_orchestration_best_effort"
+
+        # Message classes that normally use this profile.
+        intended_message_types:
+          - "orchestration_commands"
+
+        # Quantitative envelope for non-critical orchestration traffic.
+        # Unit for latency and jitter values: microseconds.
+        # Unit for synchronization value: nanoseconds.
+        profile_requirement_envelope:
+          latency_metric: "one_way_latency"
+          latency_statistic_type: "mean_p95_and_bound"
+          target_mean_one_way_latency_us: 100000
+          target_p95_one_way_latency_us: 30000
+          max_one_way_latency_us: 50000
+          max_jitter_us: 10000
+          max_packet_loss_probability: 0.001
+          max_time_error_ns: 1000000
+
+        # External support contexts used by this profile.
+        # This profile does not require a dedicated network slice.
+        # It is carried over a shared/default orchestration support context with
+        # its own PDU-session, QoS-flow, and PCC/policy references.
+        network_slice_required: false
+        default_orchestration_context_ref: "default-shared-orchestration-context-01"
+        pdu_session_context_ref: "pdu-session-context-orchestration-01"
+        qos_flow_context_ref: "qos-flow-context-orchestration-01"
+        pcc_policy_ref: "pcc-policy-orchestration-01"
+        selected_user_plane_anchor_ref: "upf-function-edge-01"
+
+  # ---------------------------------------------------------------------------
+  # 5. Edge control capabilities
+  # ---------------------------------------------------------------------------
+  # Edge/cloud support for placing or reaching workflow-control functions close to
+  # the quantum resources. Detailed edge-computing attributes are external to this descriptor.
+  edge_control_capabilities:
+
+    # Boolean capabilities exposed by the edge/cloud support domain.
+    edge_control_reachability_supported: true
+    control_function_placement_supported: true
+    qpu_control_endpoint_reachability_supported: true
+
+    # External edge-computing management and selected edge resources.
+    edge_computing_management_ref: "edge-computing-management-descriptor-01"
+    selected_edge_data_network_ref: "edn-edge-01"
+    selected_edge_application_ref: "eas-function-quantum-control-01"
+
+    # Candidate edge locations and local control functions available to this service.
+    supported_control_locations:
+      - "edge-01"
+    supported_edge_control_functions:
+      - "edge-control-01"
+
+    # Remote QPU control endpoints reachable from the selected edge/control context.
+    supported_qpu_control_endpoints:
+      - "QPU-01"
+
+  # ---------------------------------------------------------------------------
+  # 6. Synchronization capabilities
+  # ---------------------------------------------------------------------------
+  # Synchronization support exposed by the classical/6G support network.
+  # 3GPP TS 23.501 includes 5GS time-synchronization support concepts.
+  # The detailed synchronization model is external to this descriptor.
+  synchronization_capabilities:
+
+    # Boolean capability indicating whether synchronization support is available.
+    synchronization_supported: true
+
+    # External synchronization-support descriptor.
+    synchronization_support_ref: "synchronization-support-descriptor-01"
+
+    # Nominal synchronization accuracy exposed by the support domain.
+    # Unit: nanoseconds.
+    nominal_accuracy_ns: 1000
+
+    # Synchronization profiles available to this service.
+    # Example values: "network_time_synchronization", "time_sensitive_communication",
+    # "operator_specific_sync_profile".
+    supported_sync_profiles:
+      - "network_time_synchronization"
+
+    # Purpose of synchronization support in this quantum-service context.
+    intended_use: "coordinate_timing_sensitive_quantum_classical_workflow_steps_for_multi_qubit_teleportation"
+
+# Current measured state and freshness policy of the classical-support context.
+state_and_validity:
+
+  # Time at which the overall classical-support state estimate was produced.
+  # Format: ISO 8601 UTC timestamp.
+  state_timestamp_utc: "2026-06-09T00:00:00Z"
+
+  # Freshness policy for using this classical-support state in orchestration decisions.
+  # This is not a service deadline and does not imply that the descriptor is updated
+  # periodically at this rate. The descriptor may be refreshed earlier if access,
+  # UPF, edge/cloud, slice/QoS, PDU-session, QoS-flow, PCC/policy, QoS-monitoring,
+  # or synchronization state changes.
+  state_freshness_policy:
+
+    # Refresh strategy used by the infrastructure state repository.
+    # Example values: "periodic", "event_driven", "event_driven_with_periodic_background_refresh".
+    refresh_mode: "event_driven_with_periodic_background_refresh"
+
+    # Maximum acceptable age for topology and static capability information.
+    # Unit: seconds.
+    max_age_for_topology_and_capabilities_s: 300
+
+    # Maximum acceptable age for delay, jitter, packet-loss, access, user-plane,
+    # edge/cloud, slice/QoS, PDU-session, QoS-flow, PCC/policy, QoS-monitoring,
+    # QPU-control-endpoint, and synchronization state before admission or reservation.
+    # Unit: seconds.
+    max_age_for_latency_and_jitter_state_s: 5
+    max_age_for_packet_loss_state_s: 5
+    max_age_for_access_state_s: 5
+    max_age_for_user_plane_state_s: 5
+    max_age_for_edge_cloud_state_s: 30
+    max_age_for_qpu_control_endpoint_state_s: 5
+    max_age_for_slice_qos_state_s: 5
+    max_age_for_synchronization_state_s: 30
+
+    # Whether the state must be refreshed before admission-control or reservation decisions.
+    requires_refresh_before_admission: true
+    requires_refresh_before_reservation: true
+
+  # Current latency estimate for the selected classical support path.
+  # Latency in this descriptor is a one-way path metric. Since radio access,
+  # scheduling, queueing, and user-plane conditions may vary over time, the
+  # descriptor separates mean latency, high-percentile latency, and the service bound.
+  # Performance measurement and KPI information can be linked to 3GPP TS 28.552
+  # and TS 28.554.
+  latency_state:
+    last_updated_utc: "2026-06-09T00:00:00Z"
+    latency_class: "low_latency"
+
+    # Statistical definition of the latency values reported below.
+    # Unit: microseconds.
+    latency_metric: "one_way_latency"
+    statistic_type: "mean_p95_p99_and_bound"
+    measurement_window_s: 5
+
+    # Mean one-way latency estimated over the measurement window.
+    # This mean value is included as telemetry context; Table II reports the high-percentile latency value.
+    estimated_mean_one_way_latency_us: 10000
+
+    # High-percentile one-way latency estimated over the measurement window.
+    # These values capture latency variability due to radio access, scheduling,
+    # queueing, and user-plane conditions.
+    # Table II uses the 23 ms high-percentile latency value for the critical support check.
+    estimated_p95_one_way_latency_us: 23000
+    estimated_p99_one_way_latency_us: 24000
+
+    # Maximum one-way latency supported for the selected critical support profile.
+    # Unit: microseconds. 25000 us = 25 ms, matching the Table-II bound.
+    # This value is compared against the latency requirements of the message classes.
+    support_latency_bound_us: 25000
+
+    estimation_method: "telemetry_calibrated_latency_model"
+    model_ref: "classical_support_latency_model_v0.1"
+    performance_measurement_ref: "pm-kpi-descriptor-classical-support-01"
+    description: "Latency refers to the selected classical support path used for quantum-classical support traffic, including teleportation measurement outcomes, feed-forward, Pauli-frame updates, and remote-QPU operation control."
+
+  # Current jitter estimate for the selected classical support path.
+  # Jitter captures delay variation around the latency values reported above.
+  # It is kept separate from the mean and percentile latency estimates.
+  jitter_state:
+    last_updated_utc: "2026-06-09T00:00:00Z"
+    jitter_class: "bounded"
+
+    # Statistical definition of the jitter values reported below.
+    # Unit: microseconds.
+    # The metric used here is one-way packet delay variation over the same
+    # measurement window used for latency estimation.
+    jitter_metric: "one_way_packet_delay_variation"
+    statistic_type: "p95_and_bound"
+    measurement_window_s: 5
+
+    # Estimated high-percentile delay variation over the measurement window.
+    estimated_p95_jitter_us: 100
+
+    # Maximum tolerated jitter for the selected critical support profile.
+    jitter_bound_us: 250
+
+    estimation_method: "telemetry_calibrated_jitter_model"
+    performance_measurement_ref: "pm-kpi-descriptor-classical-support-01"
+
+  # Current packet-loss estimate for the selected classical support path.
+  # Values are probabilities in the [0, 1] range.
+  packet_loss_state:
+    last_updated_utc: "2026-06-09T00:00:00Z"
+    reliability_class: "high_reliability_low_loss"
+    estimated_packet_loss_probability: 0.00004
+    packet_loss_bound_probability: 0.001
+    estimation_method: "telemetry_calibrated_packet_loss_model"
+    performance_measurement_ref: "pm-kpi-descriptor-classical-support-01"
+
+  # Current access state at the integrated QBS/gNB access node.
+  # Only short references are repeated here. Full managed-object details are defined
+  # once under support_capabilities.managed_resource_context.access_resource_context.
+  access_state:
+    last_updated_utc: "2026-06-09T00:00:00Z"
+    access_node_id: "QBS-01"
+    selected_cell_ref: "nr-cell-du-qbs-01"
+    referenced_access_managed_objects:
+      - "gnb-cu-cp-function-qbs-01"
+      - "gnb-cu-up-function-qbs-01"
+      - "gnb-du-function-qbs-01"
+      - "nr-cell-cu-qbs-01"
+      - "nr-cell-du-qbs-01"
+
+    # Qualitative state summaries used by admission control.
+    # Example values: "low", "medium", "high", "overloaded" for load/pressure;
+    # "stable", "variable", "degraded" for channel state.
+    access_load_state: "low"
+    channel_state: "stable"
+    scheduling_pressure: "low"
+
+  # Current user-plane state affecting the selected support path.
+  user_plane_state:
+    last_updated_utc: "2026-06-09T00:00:00Z"
+    selected_user_plane_anchor: "UPF-edge-01"
+    referenced_upf_managed_object: "upf-function-edge-01"
+
+    # Example values: "available", "degraded", "unavailable".
+    upf_status: "available"
+
+    # Qualitative user-plane state summaries.
+    # Example values: "low", "medium", "high", "overloaded" for congestion;
+    # "bounded", "variable", "unbounded" for queueing.
+    user_plane_congestion_state: "low"
+    queueing_state: "bounded"
+
+    # Whether edge anchoring is currently active for this support path.
+    edge_anchoring_status: "active"
+
+  # Current slice, PDU-session, QoS-flow, QoS-monitoring, and PCC/policy-control state.
+  # This state refers to the support profile currently considered for the critical
+  # quantum-control traffic. The actual reservation is performed later by the
+  # deployment descriptor.
+  slice_qos_state:
+    last_updated_utc: "2026-06-09T00:00:00Z"
+
+    # Selected support profile and treatment currently considered feasible.
+    selected_support_profile: "critical_quantum_control"
+    selected_support_treatment: "priority_low_latency"
+
+    # Selected external support contexts for the critical support profile.
+    selected_network_slice_ref: "network-slice-low-latency-01"
+    selected_network_slice_subnet_refs:
+      - "network-slice-subnet-ran-low-latency-01"
+      - "network-slice-subnet-core-low-latency-01"
+    selected_pdu_session_context_ref: "pdu-session-context-quantum-control-01"
+    selected_qos_flow_context_ref: "qos-flow-context-critical-control-01"
+    selected_qos_monitoring_ref: "qf-qos-monitoring-control-critical-01"
+    selected_pcc_policy_ref: "pcc-policy-critical-control-01"
+
+    # Availability state of the selected support contexts.
+    # Example values: "available", "degraded", "unavailable".
+    network_slice_status: "available"
+    pdu_session_status: "available"
+    qos_flow_status: "available"
+    qos_monitoring_status: "available"
+    pcc_policy_status: "available"
+
+    # Reservation state of the selected support context.
+    # Example values: "not_reserved", "reserved", "reservation_failed", "released".
+    reservation_status: "not_reserved"
+
+    # Critical message classes supported by the selected profile.
+    critical_message_classes_supported:
+      - "heralding"
+      - "acknowledgments"
+      - "measurement_outcomes"
+      - "feed_forward"
+
+  # Current edge/cloud state for the selected edge-hosted quantum workflow control function.
+  edge_cloud_state:
+    last_updated_utc: "2026-06-09T00:00:00Z"
+    edge_location_id: "edge-01"
+    edge_control_function_id: "edge-control-01"
+    selected_edge_data_network_ref: "edn-edge-01"
+    selected_edge_application_ref: "eas-function-quantum-control-01"
+
+    # Availability and load state of the selected edge context.
+    # Example values: true/false for reachability;
+    # "available", "degraded", "unavailable" for placement;
+    # "low", "medium", "high", "overloaded" for load.
+    edge_reachable: true
+    control_function_placement_status: "available"
+    edge_compute_load_state: "low"
+
+  # Current remote QPU control endpoint state for the selected support path.
+  qpu_control_endpoint_state:
+    last_updated_utc: "2026-06-09T00:00:00Z"
+    qpu_id: "QPU-01"
+    qpu_control_endpoint_ref: "qpu-control-endpoint-01"
+
+    # Reachability of the remote QPU control endpoint from the selected support path.
+    qpu_control_endpoint_reachable: true
+
+    # Availability of the control endpoint for teleportation outcomes and remote-operation control.
+    qpu_control_endpoint_status: "available"
+
+    # Supported message classes at the QPU control endpoint.
+    supported_message_classes:
+      - "measurement_outcomes"
+      - "feed_forward"
+      - "acknowledgments"
+      - "orchestration_commands"
+
+    # Supported payloads at the QPU control endpoint.
+    supported_payload_types:
+      - "teleportation_bell_state_measurement_outcomes"
+      - "pauli_correction_information"
+      - "pauli_frame_update"
+      - "remote_qpu_operation_preparation_command"
+      - "remote_operation_completion_ack"
+      - "operation_result_metadata"
+
+  # Current synchronization state available to the classical support path.
+  synchronization_state:
+    last_updated_utc: "2026-06-09T00:00:00Z"
+    synchronization_support_ref: "synchronization-support-descriptor-01"
+
+    # Whether synchronization support is currently available.
+    synchronization_available: true
+
+    # Estimated and required synchronization accuracy.
+    # Unit: nanoseconds. Table II uses 100 ns <= 1 us.
+    estimated_accuracy_ns: 100
+    accuracy_bound_ns: 1000
+
+    # Selected synchronization profile.
+    sync_profile: "network_time_synchronization"
+
+# Ownership and update rules for this descriptor.
+ownership:
+
+  # Architectural block responsible for storing and maintaining the latest validated version of this descriptor.
+  owner: "infrastructure_state_repository"
+
+  # Information sources used to populate or refresh specific parts of this descriptor.
+  data_sources:
+
+    # Source providing external 3GPP/6G information-model descriptors.
+    - source_id: "6g_information_model_repository"
+      updates:
+        - "support_capabilities.managed_resource_context"
+        - "support_capabilities.support_profile_catalog"
+        - "support_capabilities.edge_control_capabilities"
+        - "support_capabilities.synchronization_capabilities"
+        - "state_and_validity.latency_state.performance_measurement_ref"
+        - "state_and_validity.jitter_state.performance_measurement_ref"
+        - "state_and_validity.packet_loss_state.performance_measurement_ref"
+
+    # Source providing inventory information about the selected classical support path.
+    - source_id: "classical_support_inventory"
+      updates:
+        - "support_capabilities.connectivity_context"
+        - "support_capabilities.traffic_support"
+
+    # Source providing telemetry from the 3GPP/6G domain.
+    - source_id: "6g_domain_telemetry"
+      updates:
+        - "state_and_validity.latency_state"
+        - "state_and_validity.jitter_state"
+        - "state_and_validity.packet_loss_state"
+        - "state_and_validity.access_state"
+        - "state_and_validity.user_plane_state"
+        - "state_and_validity.slice_qos_state"
+        - "state_and_validity.synchronization_state"
+
+    # Source providing telemetry from the edge/cloud domain.
+    - source_id: "edge_cloud_telemetry"
+      updates:
+        - "state_and_validity.edge_cloud_state"
+
+    # Source reporting remote QPU control endpoint reachability and payload support.
+    - source_id: "qpu_control_endpoint_monitor"
+      updates:
+        - "support_capabilities.managed_resource_context.qpu_control_resource_context"
+        - "state_and_validity.qpu_control_endpoint_state"
+
+    # Source responsible for reporting slice, PDU-session, QoS-flow, and policy availability.
+    - source_id: "slice_qos_orchestrator"
+      updates:
+        - "state_and_validity.slice_qos_state"
+
+    # Source responsible for reporting reservation status after orchestration decisions.
+    - source_id: "orchestration_resource_reservations"
+      updates:
+        - "state_and_validity.slice_qos_state.reservation_status"
+        - "state_and_validity.edge_cloud_state.control_function_placement_status"
+        - "state_and_validity.qpu_control_endpoint_state.qpu_control_endpoint_status"
+
+    # Source defining operator-specific freshness policies.
+    - source_id: "operator_policy_configuration"
+      updates:
+        - "state_and_validity.state_freshness_policy"
+
+  # Events that trigger descriptor refresh.
+  # Events are raised by inventory, telemetry, orchestration, policy, or external
+  # information-model repositories.
+  update_semantics:
+    triggers:
+      - "classical_support_inventory_update"
+      - "support_path_update"
+      - "ng_ran_nrm_update"
+      - "fivegc_nrm_update"
+      - "edge_computing_management_update"
+      - "qpu_control_endpoint_update"
+      - "network_slice_nrm_update"
+      - "pdu_session_state_update"
+      - "qos_flow_state_update"
+      - "pcc_policy_update"
+      - "qos_monitoring_update"
+      - "latency_or_jitter_state_update"
+      - "packet_loss_state_update"
+      - "access_state_update"
+      - "upf_or_user_plane_state_update"
+      - "edge_cloud_state_update"
+      - "synchronization_state_update"
+      - "resource_reservation_update"
+      - "support_information_model_update"
+      - "freshness_policy_update"
+
+    # Descriptor sections that may be refreshed when new state, inventory, reservation,
+    # policy, or external 3GPP/6G support-model information is available.
+    refreshable_sections:
+      - "support_capabilities.connectivity_context"
+      - "support_capabilities.managed_resource_context"
+      - "support_capabilities.traffic_support"
+      - "support_capabilities.support_profile_catalog"
+      - "support_capabilities.edge_control_capabilities"
+      - "support_capabilities.synchronization_capabilities"
+      - "state_and_validity.state_timestamp_utc"
+      - "state_and_validity.state_freshness_policy"
+      - "state_and_validity.latency_state"
+      - "state_and_validity.jitter_state"
+      - "state_and_validity.packet_loss_state"
+      - "state_and_validity.access_state"
+      - "state_and_validity.user_plane_state"
+      - "state_and_validity.slice_qos_state"
+      - "state_and_validity.edge_cloud_state"
+      - "state_and_validity.qpu_control_endpoint_state"
+      - "state_and_validity.synchronization_state"

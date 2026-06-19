@@ -1,0 +1,392 @@
+# Version of the descriptor structure. This allows future schema changes while preserving compatibility.
+schema_version: "0.1-draft"
+
+# Type of descriptor. Management functions use this field to select the expected parser and validation rules.
+descriptor_type: "quantum_resource_descriptor"
+
+# Unique identifier of this descriptor instance, not of a physical quantum resource.
+descriptor_id: "quantum_resource_descriptor-01"
+
+# Reference to the service descriptor associated with these quantum resources.
+service_ref: "svc-01"
+
+# Quantum-domain capabilities currently available for the requested service.
+available_capabilities:
+
+  # Connectivity information for the selected quantum path.
+  connectivity_context:
+
+    # Human-readable summary of the managed quantum path.
+    topology: "QUE--QBS--QR--QPU"
+
+    # Source quantum endpoint involved in the service.
+    source_endpoint_id: "QUE-01"
+    source_endpoint_type: "QUE"
+
+    # Quantum base station associated with the source QUE.
+    qbs_id: "QBS-01"
+
+    # Destination quantum endpoint or remote quantum processor.
+    destination_endpoint_id: "QPU-01"
+    destination_endpoint_type: "QPU"
+
+    # Quantum repeaters involved in the selected path. This example uses one QR.
+    repeater_ids:
+      - "QR-01"
+
+    # Identifier of the candidate quantum path.
+    qpath_id: "qpath-01"
+
+    # Ordered list of quantum nodes traversed by the service.
+    qpath_nodes:
+      - "QUE-01"
+      - "QBS-01"
+      - "QR-01"
+      - "QPU-01"
+
+    # Access information linking the source QUE with its quantum access node.
+    access_context:
+      quantum_access_node_id: "QBS-01"
+      attached_endpoint_id: "QUE-01"
+      access_link_id: "QUE-01_QBS-01"
+
+  # Static quantum memory capacity at the nodes involved in the selected path.
+  # Dynamic availability is reported later under quality_and_validity.memory_state.
+  quantum_memory_resources:
+
+    # Unit used to express quantum memory capacity.
+    resource_unit: "qubits"
+
+    # Human-readable explanation of how memory resources are interpreted in this descriptor.
+    resource_description: "Each memory qubit denotes one quantum memory resource able to temporarily store an input qubit, one half of an elementary Bell pair, one half of an end-to-end Bell pair, or a reconstructed teleported qubit."
+
+    # Per-node quantum memory capacity and functional role.
+    node_resources:
+      - node_id: "QUE-01"
+        node_type: "QUE"
+        total_memory_qubits: 12
+        functional_role: "source_endpoint_and_teleportation_measurement_node"
+        description: "Source endpoint quantum memory available to hold input qubits and local Bell-pair halves before Bell-state measurements for teleportation."
+
+      - node_id: "QBS-01"
+        node_type: "QBS"
+        total_memory_qubits: 16
+        functional_role: "access_swapping_node"
+        description: "Quantum access-node memory for adjacent elementary-link qubits and local entanglement swapping."
+
+      - node_id: "QR-01"
+        node_type: "QR"
+        total_memory_qubits: 16
+        functional_role: "repeater_swapping_node"
+        description: "Quantum repeater memory for adjacent elementary-link qubits and local entanglement swapping."
+
+      - node_id: "QPU-01"
+        node_type: "QPU"
+        total_memory_qubits: 12
+        functional_role: "remote_processor_and_teleportation_correction_node"
+        description: "Remote quantum-processor memory available to hold Bell-pair endpoints, reconstruct teleported qubits, and execute the requested remote quantum operation."
+
+  # Remote quantum-processing capabilities exposed by the selected resources.
+  # Current QPU availability is dynamic and is reported later under quality_and_validity.qpu_state.
+  processing_context:
+    remote_processing_supported: true
+    remote_qpu_operation_execution_supported: true
+
+    # Remote QPU selected for the service.
+    remote_execution_node_id: "QPU-01"
+
+    # Supported remote operations exposed by the selected QPU.
+    supported_remote_operations:
+      - "remote_qpu_operation_execution"
+      - "remote_processing_support"
+
+    # Execution gate supported by the remote QPU for this service class.
+    supported_execution_gates:
+      - "all_requested_qubits_available_at_qpu"
+
+  # Bell-pair generation capacity over the elementary quantum links.
+  generation_capacity:
+
+    # Maximum number of parallel Bell-pair generation processes supported per elementary link.
+    # This is a resource capability, not the selected deployment strategy.
+    parallel_attempts_supported_per_elementary_link: 4
+
+    # Human-readable explanation of the previous field.
+    attempt_description: "Parallel attempts indicate how many Bell-pair generation processes can be active at the same time on each elementary link."
+
+    # Elementary quantum links over which Bell pairs can be generated before entanglement swapping.
+    elementary_links:
+      - link_id: "QUE-01_QBS-01"
+        generation_supported: true
+        link_role: "source_access_link"
+        description: "Elementary entanglement link between the source QUE and its quantum access node."
+
+      - link_id: "QBS-01_QR-01"
+        generation_supported: true
+        link_role: "source_side_infrastructure_link"
+        description: "Elementary entanglement link between the quantum access node and the repeater."
+
+      - link_id: "QR-01_QPU-01"
+        generation_supported: true
+        link_role: "destination_side_infrastructure_link"
+        description: "Elementary entanglement link between the repeater and the remote QPU."
+
+  # Quantum protocol operations supported by the selected resources.
+  protocol_capabilities:
+
+    # Basic quantum operations exposed by these resources.
+    # The workflow and deployment descriptors decide how these capabilities are combined for a specific service.
+    entanglement_generation: true
+    entanglement_swapping: true
+    end_to_end_bell_pair_generation_supported: true
+    bell_state_measurement: true
+    teleportation_supported: true
+    multi_qubit_teleportation_supported: true
+    delayed_multi_qubit_teleportation_supported: true
+    immediate_teleportation_supported: true
+    pauli_correction: true
+    pauli_frame_update: true
+    feed_forward_support: true
+
+    # Capability to improve Bell-pair quality by consuming additional Bell pairs.
+    # Whether this capability is actually used is selected in the deployment descriptor.
+    entanglement_distillation_supported: true
+
+    # Purification is the specific distillation method exposed by these resources.
+    distillation_modes:
+      - "purification"
+
+    # Memory management capabilities after measurements or failed generation attempts.
+    memory_reset: true
+    memory_reuse_after_measurement: true
+
+    # Nodes where entanglement swapping can be executed.
+    swapping_nodes:
+      - "QBS-01"
+      - "QR-01"
+
+  # Teleportation-specific capability context for the selected quantum resources.
+  teleportation_context:
+
+    # Teleportation strategy supported by the selected resources for this service class.
+    supported_teleportation_strategies:
+      - "delayed_multi_qubit_teleportation"
+      - "immediate_teleportation"
+
+    # Source node holding the input qubits before teleportation.
+    input_qubit_source_node_id: "QUE-01"
+
+    # Node performing the local Bell-state measurements between input qubits and local Bell-pair halves.
+    bell_state_measurement_node_id: "QUE-01"
+
+    # Node receiving the teleported qubits after classical feed-forward.
+    teleported_qubit_destination_node_id: "QPU-01"
+
+    # Node applying Pauli corrections or Pauli-frame updates.
+    pauli_correction_node_id: "QPU-01"
+
+    # Node executing the requested remote quantum operation.
+    remote_execution_node_id: "QPU-01"
+
+    # Execution gate associated with the remote QPU operation.
+    remote_execution_gate: "all_requested_qubits_available_at_qpu"
+
+    # Relationship between input qubits and Bell-pair consumption.
+    bell_pair_consumption_model:
+      bell_pairs_per_input_qubit: 1
+      description: "Each input qubit teleported from QUE-01 to QPU-01 consumes one end-to-end Bell pair."
+
+# Current quality estimates and freshness policy of the quantum-resource state.
+quality_and_validity:
+
+  # Time at which the overall telemetry-derived quantum-resource state estimate was produced, expressed in UTC.
+  # Timestamp follows ISO 8601 format: "T" separates date and time, and "Z" means UTC time.
+  state_timestamp_utc: "2026-06-09T00:00:00Z"
+
+  # Freshness policy for using this quantum-resource state in management decisions.
+  # The descriptor may be refreshed earlier if a quantum-link, memory, QPU-availability,
+  # protocol-capability, or resource-reservation update is received.
+  state_freshness_policy:
+    refresh_mode: "event_driven_with_periodic_background_refresh"
+    max_age_for_topology_and_capabilities_s: 300
+    max_age_for_link_quality_estimates_s: 60
+    max_age_for_memory_state_s: 5
+    max_age_for_qpu_availability_s: 5
+    requires_refresh_before_admission: true
+    requires_refresh_before_reservation: true
+
+  # Per-link quality estimates for elementary Bell-pair generation.
+  link_quality_state:
+    last_updated_utc: "2026-06-09T00:00:00Z"
+
+    # Human-readable explanation of the link-quality estimates.
+    quality_description: "Per-link estimates refer to elementary Bell pairs generated over each quantum link before entanglement swapping, storage-induced decoherence, distillation, teleportation, or end-to-end feasibility evaluation. The final numerical feasibility evidence is reported in the feasibility descriptor according to the manuscript Table II."
+
+    # Quality estimates for each elementary quantum link.
+    elementary_link_estimates:
+      - link_id: "QUE-01_QBS-01"
+        estimated_elementary_pair_fidelity: 0.94
+        estimated_generation_success_probability: 0.80
+        estimation_method: "telemetry_calibrated_analytical_model"
+        model_ref: "elementary_link_model_v0.1"
+
+      - link_id: "QBS-01_QR-01"
+        estimated_elementary_pair_fidelity: 0.92
+        estimated_generation_success_probability: 0.75
+        estimation_method: "telemetry_calibrated_analytical_model"
+        model_ref: "elementary_link_model_v0.1"
+
+      - link_id: "QR-01_QPU-01"
+        estimated_elementary_pair_fidelity: 0.90
+        estimated_generation_success_probability: 0.70
+        estimation_method: "telemetry_calibrated_analytical_model"
+        model_ref: "elementary_link_model_v0.1"
+
+  # Current quantum memory state at the involved nodes.
+  memory_state:
+    last_updated_utc: "2026-06-09T00:00:00Z"
+    status: "resources_available"
+
+    # Per-node available quantum memory and coherence-time estimates.
+    # Coherence time is a resource-side property; service deadlines are defined in the service descriptor.
+    node_states:
+      - node_id: "QUE-01"
+        available_memory_qubits: 8
+        coherence_time_us: 10000000
+
+      - node_id: "QBS-01"
+        available_memory_qubits: 12
+        coherence_time_us: 10000000
+
+      - node_id: "QR-01"
+        available_memory_qubits: 12
+        coherence_time_us: 10000000
+
+      - node_id: "QPU-01"
+        available_memory_qubits: 8
+        coherence_time_us: 10000000
+
+    # Minimum coherence time across the selected quantum path.
+    # Unit: microseconds. 10000000 us = 10 s, matching the coherence-time bound used in Table II.
+    # The feasibility descriptor compares this value against the storage time induced by a candidate workflow.
+    limiting_coherence_time_us: 10000000
+
+  # Current teleportation capability state for the selected resources.
+  teleportation_state:
+    last_updated_utc: "2026-06-09T00:00:00Z"
+    status: "available"
+
+    # Bell-state measurement capability at the source endpoint.
+    bell_state_measurement_node_id: "QUE-01"
+    bell_state_measurement_status: "available"
+
+    # Pauli correction or Pauli-frame update capability at the remote QPU.
+    pauli_correction_node_id: "QPU-01"
+    pauli_correction_status: "available"
+
+    # Feed-forward support from the source endpoint to the remote QPU.
+    feed_forward_destination_node_id: "QPU-01"
+    feed_forward_status: "available"
+
+    # Strategy currently admissible for the selected path and memory state.
+    admissible_teleportation_strategies:
+      - "delayed_multi_qubit_teleportation"
+      - "immediate_teleportation"
+
+  # Current availability state of the remote quantum processor.
+  qpu_state:
+    last_updated_utc: "2026-06-09T00:00:00Z"
+    qpu_id: "QPU-01"
+    availability_status: "available"
+
+    # Number of currently available logical qubits for remote execution.
+    available_logical_qubits: 8
+
+    # Number of logical qubits required by the current service request.
+    current_service_logical_qubit_demand_ref: "service_descriptor.operation_profile.resource_demand.remote_qpu_logical_qubits"
+
+    # Remote operation classes currently accepted by the QPU.
+    accepted_remote_operations:
+      - "remote_qpu_operation_execution"
+      - "remote_processing_support"
+
+    # Execution gate supported by the current QPU state.
+    supported_execution_gates:
+      - "all_requested_qubits_available_at_qpu"
+
+    # Queue and reservation state used by orchestration.
+    reservation_status: "available_for_reservation"
+    estimated_queue_delay_us: 0
+
+# Ownership and update rules for this descriptor.
+ownership:
+
+  # Architectural block responsible for storing and maintaining the latest validated version of this descriptor.
+  owner: "infrastructure_state_repository"
+
+  # Information sources used to populate or refresh specific parts of this descriptor.
+  data_sources:
+    - source_id: "quantum_resource_inventory"
+      updates:
+        - "available_capabilities.connectivity_context"
+        - "available_capabilities.quantum_memory_resources"
+        - "available_capabilities.processing_context"
+        - "available_capabilities.generation_capacity"
+        - "available_capabilities.protocol_capabilities"
+        - "available_capabilities.teleportation_context"
+
+    - source_id: "quantum_domain_telemetry"
+      updates:
+        - "quality_and_validity.link_quality_state"
+        - "quality_and_validity.memory_state"
+        - "quality_and_validity.teleportation_state"
+        - "quality_and_validity.qpu_state"
+
+    - source_id: "quantum_link_estimator"
+      updates:
+        - "quality_and_validity.link_quality_state.elementary_link_estimates"
+
+    - source_id: "teleportation_capability_monitor"
+      updates:
+        - "quality_and_validity.teleportation_state"
+
+    - source_id: "qpu_resource_manager"
+      updates:
+        - "quality_and_validity.qpu_state"
+
+    - source_id: "orchestration_resource_reservations"
+      updates:
+        - "quality_and_validity.memory_state.node_states.available_memory_qubits"
+        - "quality_and_validity.qpu_state"
+
+    - source_id: "operator_policy_configuration"
+      updates:
+        - "quality_and_validity.state_freshness_policy"
+
+  # Events that trigger descriptor refresh.
+  update_semantics:
+    triggers:
+      - "quantum_resource_inventory_update"
+      - "quantum_path_update"
+      - "quantum_link_state_update"
+      - "quantum_memory_state_update"
+      - "teleportation_capability_update"
+      - "qpu_availability_update"
+      - "reservation_state_update"
+      - "estimation_model_update"
+      - "freshness_policy_update"
+
+    # Descriptor sections that may be refreshed when new state, inventory, reservation, or policy information is available.
+    refreshable_sections:
+      - "available_capabilities.connectivity_context"
+      - "available_capabilities.quantum_memory_resources"
+      - "available_capabilities.processing_context"
+      - "available_capabilities.generation_capacity"
+      - "available_capabilities.protocol_capabilities"
+      - "available_capabilities.teleportation_context"
+      - "quality_and_validity.state_timestamp_utc"
+      - "quality_and_validity.state_freshness_policy"
+      - "quality_and_validity.link_quality_state"
+      - "quality_and_validity.memory_state"
+      - "quality_and_validity.teleportation_state"
+      - "quality_and_validity.qpu_state"

@@ -1,0 +1,148 @@
+# Version of the descriptor structure. This allows future schema changes while preserving compatibility.
+schema_version: "0.1-draft"
+
+# Type of descriptor. Management functions use this field to select the expected parser and validation rules.
+descriptor_type: "service_descriptor"
+
+# Unique identifier of this descriptor instance.
+descriptor_id: "service_descriptor-01"
+
+# Unique identifier of the requested service. Other descriptors refer to this value through service_ref.
+service_id: "svc-01"
+
+# Service-facing description of the requested quantum functionality.
+operation_profile:
+
+  # Main quantum-enabled service requested by the tenant.
+  operation_type: "remote_quantum_execution"
+
+  # Quantum service used to transfer the input qubit set to the remote QPU.
+  supporting_quantum_service: "multi_qubit_teleportation"
+
+  # Entanglement service used as the underlying resource for teleportation.
+  underlying_entanglement_service: "end_to_end_bell_pair_generation"
+
+  # Specific operation requested at the remote quantum processor.
+  requested_operation: "remote_qpu_operation_execution"
+
+  # Teleportation strategy used by the service workflow.
+  teleportation_strategy: "delayed_multi_qubit_teleportation"
+
+  # Execution condition for launching the remote QPU operation.
+  execution_gate: "all_requested_qubits_available_at_qpu"
+
+  # Quantum resources requested at service level.
+  resource_demand:
+
+    # Number of input qubits to teleport from the QUE to the remote QPU.
+    input_qubits_to_teleport: 4
+
+    # Number of Bell pairs required to teleport the input qubit set.
+    bell_pairs: 4
+
+    # Bell-pair consumption ratio for the selected teleportation workflow.
+    bell_pairs_per_input_qubit: 1
+
+    # Remote QPU register demand after teleportation.
+    remote_qpu_logical_qubits: 4
+
+    # Human-readable description of the requested resource demand.
+    description: "Teleport 4 input qubits from the QUE to the remote QPU using one end-to-end Bell pair per input qubit, and launch the remote QPU operation once all qubits are available."
+
+# Service-level objectives requested by the tenant.
+objective_profile:
+
+  # Minimum fidelity required for the reconstructed qubits at the remote QPU.
+  minimum_reconstructed_qubit_fidelity: 0.85
+
+  # Fidelity metric evaluated at the service level.
+  fidelity_metric: "reconstructed_qubit_fidelity_at_qpu"
+
+  # Mapping used by the feasibility estimator to derive the required Bell-pair fidelity threshold.
+  equivalent_bell_pair_fidelity_threshold_ref: "derived_by_feasibility_estimator"
+
+  # Maximum completion time requested for the teleportation stage.
+  # Unit: microseconds. 1000000 us = 1 s, as stated in the manuscript example.
+  completion_deadline_us: 1000000
+
+  # Deadline semantics used by admission control and feasibility revalidation.
+  completion_deadline_scope: "teleported_qubit_set_available_at_qpu"
+
+  # Probability of satisfying the requested qubit set, fidelity target, and completion deadline.
+  service_reliability_target: 0.95
+
+  # Reliability metric evaluated at service level.
+  reliability_metric: "probability_all_requested_qubits_available_at_qpu_with_fidelity_above_target_before_deadline"
+
+  # Relative priority used by admission control and orchestration policies.
+  priority: "high"
+
+# Participating endpoints and workflow references for the requested quantum--classical procedure.
+workflow_profile:
+
+  # Source endpoint holding the input qubits before teleportation.
+  source_endpoint_ref: "QUE-01"
+
+  # Destination endpoint receiving the reconstructed qubits after teleportation.
+  destination_endpoint_ref: "QPU-01"
+
+  # Remote quantum processor that executes the requested operation.
+  remote_qpu_ref: "QPU-01"
+
+  # Endpoints participating in the service-facing workflow.
+  endpoints:
+    - endpoint_id: "QUE-01"
+      endpoint_type: "QUE"
+      role: "source"
+      authorization_status: "authorized"
+      description: "Authorized quantum user equipment holding the input qubits to be teleported."
+
+    - endpoint_id: "QPU-01"
+      endpoint_type: "QPU"
+      role: "remote_processor"
+      authorization_status: "authorized"
+      description: "Authorized remote quantum processor receiving the teleported qubits and executing the requested operation."
+
+  # Logical roles used by the workflow descriptor.
+  endpoint_roles:
+    input_qubit_source: "QUE-01"
+    teleportation_measurement_node: "QUE-01"
+    teleportation_correction_node: "QPU-01"
+    remote_execution_node: "QPU-01"
+
+  # Reference to the workflow template used to instantiate the ordered quantum--classical procedure.
+  workflow_template_ref: "remote_execution_via_multi_qubit_teleportation_template"
+
+  # Reference to the service-specific workflow descriptor instance.
+  workflow_descriptor_ref: "service_workflow_descriptor-01"
+
+  # Reference to the service and operator policy profile applied to this request.
+  policy_ref: "pol-01"
+
+# Ownership and update rules for this descriptor.
+ownership:
+
+  # Management function responsible for creating and maintaining the service-facing request descriptor.
+  owner: "service_request_management"
+
+  # Information sources used to populate or update this descriptor.
+  data_sources:
+    - "tenant_service_request"
+    - "service_procedure_catalogue"
+    - "authorization_policy_repository"
+    - "operator_policy_configuration"
+
+  # Events that trigger descriptor update.
+  update_semantics:
+    triggers:
+      - "request_creation"
+      - "service_renegotiation"
+      - "authorization_update"
+      - "operator_policy_update"
+      - "workflow_template_update"
+
+    # Descriptor sections that may be edited by the owner when the request is created or renegotiated.
+    editable_sections:
+      - "operation_profile"
+      - "objective_profile"
+      - "workflow_profile"
