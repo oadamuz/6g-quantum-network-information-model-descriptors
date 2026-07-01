@@ -1,792 +1,226 @@
-# Version of the descriptor structure.
-# Example values: "0.1-draft", "1.0".
 schema_version: "0.1-draft"
-
-# Type of descriptor.
-# This instance represents the workflow associated with a concrete service request.
 descriptor_type: "service_workflow_descriptor"
-
-# Unique identifier of this descriptor instance.
 descriptor_id: "service_workflow_descriptor-01"
-
-# Local workflow identifier.
-workflow_id: "wf-01"
-
-# Reference to the catalogue template from which this service-specific workflow instance is derived.
-workflow_template_ref: "remote_execution_via_multi_qubit_teleportation_template"
-
-# Service associated with this workflow instance.
 service_ref: "svc-01"
+workflow_template_ref: "remote_execution_via_multi_qubit_teleportation_template"
+workflow_instance_id: "wf-01"
 
-# ---------------------------------------------------------------------------
-# 1. Input descriptor references
-# ---------------------------------------------------------------------------
-# Descriptors used as inputs to instantiate, validate, evaluate, and execute this workflow.
-input_descriptor_refs:
-
-  # Service descriptor containing service-facing objectives such as qubit demand,
-  # Bell-pair demand, fidelity target, completion deadline, reliability target,
-  # priority, endpoints, and policy references.
-  service_descriptor_ref: "service_descriptor-01"
-
-  # Quantum resource descriptor containing the selected or candidate quantum path,
-  # elementary links, memory resources, coherence-time state, protocol capabilities,
-  # and quantum-resource validity information.
-  quantum_resource_descriptor_ref: "quantum_resource_descriptor-01"
-
-  # Classical support descriptor containing the selected or candidate 6G/classical
-  # support path, support profiles, slice/QoS-flow treatment, latency statistics,
-  # jitter, packet loss, synchronization, edge/cloud state, and freshness policy.
-  classical_support_descriptor_ref: "classical_support_descriptor-01"
-
-# ---------------------------------------------------------------------------
-# 2. Workflow objective references
-# ---------------------------------------------------------------------------
-# References to the service-level objectives used by planning, admission control,
-# orchestration, monitoring, and feasibility revalidation.
-workflow_objective_refs:
-
-  # Requested number of input qubits to be teleported to the remote QPU.
-  requested_teleported_qubits_ref: "service_descriptor.operation_profile.resource_demand.input_qubits_to_teleport"
-
-  # Requested number of Bell pairs required to teleport the input qubit set.
+workflow_summary:
+  service_type: "remote_quantum_execution"
+  quantum_transfer_mechanism: "delayed_multi_qubit_teleportation"
+  input_qubits_to_teleport_ref: "service_descriptor.operation_profile.resource_demand.input_qubits_to_teleport"
   required_bell_pairs_ref: "service_descriptor.operation_profile.resource_demand.bell_pairs"
+  remote_execution_gate: "all_requested_qubits_available_at_qpu"
+  description: >-
+    Ordered execution workflow for transferring four input qubits from QUE-01 to
+    QPU-01 through delayed multi-qubit teleportation and launching the remote
+    QPU operation only after all requested qubits are available at the QPU.
 
-  # Bell-pair-to-input-qubit consumption ratio used by this teleportation workflow.
-  bell_pair_to_input_qubit_ratio_ref: "service_descriptor.operation_profile.resource_demand.bell_pairs_per_input_qubit"
+participants:
+  quantum_nodes:
+    - "QUE-01"
+    - "QBS-01"
+    - "QR-01"
+    - "QPU-01"
+  classical_support_entities:
+    - "edge-control-01"
+    - "UPF-edge-01"
+  logical_roles:
+    input_qubit_source: "QUE-01"
+    bell_pair_generation_nodes:
+      - "QUE-01"
+      - "QBS-01"
+      - "QR-01"
+      - "QPU-01"
+    swapping_nodes:
+      - "QBS-01"
+      - "QR-01"
+    teleportation_measurement_node: "QUE-01"
+    correction_node: "QPU-01"
+    remote_execution_node: "QPU-01"
 
-  # Remote QPU logical-qubit demand after teleportation.
-  remote_qpu_logical_qubits_ref: "service_descriptor.operation_profile.resource_demand.remote_qpu_logical_qubits"
+workflow_steps:
+  - step_id: "wf-step-01"
+    name: "service_context_initialization"
+    step_type: "classical_message_exchange"
+    message_class: "orchestration_commands"
+    description: "Initialize service context, descriptor references, and admission assumptions."
+    depends_on: []
+    produces:
+      - "initialized_workflow_context"
 
-  # Minimum reconstructed-qubit fidelity required by the service.
-  fidelity_target_ref: "service_descriptor.objective_profile.minimum_reconstructed_qubit_fidelity"
+  - step_id: "wf-step-02"
+    name: "parallel_elementary_bell_pair_generation"
+    step_type: "quantum_operation"
+    operation: "entanglement_generation"
+    description: "Generate elementary Bell pairs over the selected quantum links."
+    quantum_links:
+      - "QUE-01_QBS-01"
+      - "QBS-01_QR-01"
+      - "QR-01_QPU-01"
+    depends_on:
+      - "wf-step-01"
+    produces:
+      - "elementary_bell_pair_generation_attempts"
 
-  # Fidelity metric evaluated by the feasibility estimator.
-  fidelity_metric_ref: "service_descriptor.objective_profile.fidelity_metric"
+  - step_id: "wf-step-03"
+    name: "heralding_and_generation_acknowledgment"
+    step_type: "classical_message_exchange"
+    message_class: "heralding"
+    description: "Report elementary Bell-pair generation outcomes through the classical-support network."
+    depends_on:
+      - "wf-step-02"
+    produces:
+      - "generation_success_information"
 
-  # Bell-pair fidelity threshold derived by the feasibility estimator from the service-level fidelity target.
-  equivalent_bell_pair_fidelity_threshold_ref: "service_descriptor.objective_profile.equivalent_bell_pair_fidelity_threshold_ref"
-
-  # Teleportation-stage completion deadline.
-  completion_deadline_ref: "service_descriptor.objective_profile.completion_deadline_us"
-
-  # Completion-deadline semantics used by admission control and feasibility revalidation.
-  completion_deadline_scope_ref: "service_descriptor.objective_profile.completion_deadline_scope"
-
-  # Target probability of satisfying qubit demand, fidelity, and deadline.
-  service_reliability_target_ref: "service_descriptor.objective_profile.service_reliability_target"
-
-  # Reliability metric evaluated at service level.
-  reliability_metric_ref: "service_descriptor.objective_profile.reliability_metric"
-
-  # Service priority used by admission and orchestration policies.
-  priority_ref: "service_descriptor.objective_profile.priority"
-
-# ---------------------------------------------------------------------------
-# 3. Workflow-level resource references
-# ---------------------------------------------------------------------------
-# References to the quantum and classical resources used by this workflow.
-workflow_resource_refs:
-
-  # Quantum path used by this workflow.
-  qpath_ref: "qpath-01"
-  qpath_source_ref: "quantum_resource_descriptor.available_capabilities.connectivity_context.qpath_id"
-
-  # Elementary links over which Bell-pair generation may be attempted.
-  elementary_links_ref: "quantum_resource_descriptor.available_capabilities.generation_capacity.elementary_links"
-
-  # Quantum memory resources used by the workflow.
-  quantum_memory_resources_ref: "quantum_resource_descriptor.available_capabilities.quantum_memory_resources"
-
-  # Input qubits held at the quantum user endpoint before teleportation.
-  input_qubit_source_ref: "service_descriptor.workflow_profile.source_endpoint_ref"
-
-  # Destination endpoint receiving the reconstructed qubits after teleportation.
-  teleportation_destination_ref: "service_descriptor.workflow_profile.destination_endpoint_ref"
-
-  # Remote QPU that receives the teleported qubit set and executes the requested operation.
-  remote_qpu_ref: "service_descriptor.workflow_profile.remote_qpu_ref"
-
-  # Node performing the local Bell-state measurements for teleportation.
-  teleportation_measurement_node_ref: "service_descriptor.workflow_profile.endpoint_roles.teleportation_measurement_node"
-
-  # Node applying Pauli corrections or Pauli-frame updates.
-  teleportation_correction_node_ref: "service_descriptor.workflow_profile.endpoint_roles.teleportation_correction_node"
-
-  # Node executing the requested remote quantum operation.
-  remote_execution_node_ref: "service_descriptor.workflow_profile.endpoint_roles.remote_execution_node"
-
-  # Swapping capability and swapping nodes used by the workflow.
-  swapping_capability_ref: "quantum_resource_descriptor.available_capabilities.protocol_capabilities.entanglement_swapping"
-  swapping_nodes_ref: "quantum_resource_descriptor.available_capabilities.protocol_capabilities.swapping_nodes"
-
-  # Classical support path used by workflow messages.
-  classical_support_path_ref: "classical_support_descriptor.support_capabilities.connectivity_context.support_path_id"
-
-  # Critical classical support profile used by heralding, measurement outcomes,
-  # feed-forward, and acknowledgments.
-  critical_classical_support_profile_ref: "critical_quantum_control"
-
-  # Orchestration support profile used for service configuration, reservation,
-  # and adaptation commands.
-  orchestration_support_profile_ref: "orchestration_control"
-
-# ---------------------------------------------------------------------------
-# 4. Operation sequence
-# ---------------------------------------------------------------------------
-# Sequential ordering of the main workflow steps required to execute the service.
-# Each step represents a logical operation, message exchange, control action, or
-# resource-state transition in the quantum--classical workflow.
-workflow_execution_policy:
-
-  # Teleportation strategy used by this workflow.
-  teleportation_strategy_ref: "service_descriptor.operation_profile.teleportation_strategy"
-  teleportation_strategy: "delayed_multi_qubit_teleportation"
-
-  # Execution gate used by the remote QPU.
-  qpu_execution_gate_ref: "service_descriptor.operation_profile.execution_gate"
-  qpu_execution_gate: "all_requested_qubits_available_at_qpu"
-
-  # Bell-pair preparation mode used before teleporting the input qubit set.
-  entanglement_preparation_mode: "prepare_required_bell_pair_set_before_teleportation"
-
-operation_sequence:
-
-  # Step 1: configure the workflow and reserve the required quantum and classical support resources.
-  - step_id: "cfg-01"
-    operation: "workflow_configuration"
-    operation_type: "classical_orchestration"
-    description: "Configure and reserve the selected quantum, classical-support, and remote-QPU resources before execution."
-    classical_message_types:
-      - "orchestration_commands"
-    support_profile_ref: "orchestration_control"
-    remote_qpu_ref: "service_descriptor.workflow_profile.remote_qpu_ref"
-    payload_types:
-      - "workflow_start_command"
-      - "resource_reservation_command"
-      - "support_profile_activation_command"
-      - "remote_qpu_operation_preparation_command"
-
-  # Step 2: generate elementary Bell pairs in parallel over the selected quantum path.
-  - step_id: "gen-01"
-    operation: "parallel_elementary_bell_pair_generation"
-    operation_type: "quantum_operation"
-    description: "Generate elementary Bell pairs in parallel over the elementary links defined in the quantum resource descriptor."
-    qpath_ref: "qpath-01"
-    elementary_links_ref: "quantum_resource_descriptor.available_capabilities.generation_capacity.elementary_links"
-    parallelism_ref: "quantum_resource_descriptor.available_capabilities.generation_capacity.parallel_attempts_supported_per_elementary_link"
-
-  # Step 3: exchange heralding messages reporting elementary generation outcomes.
-  - step_id: "herald-01"
-    operation: "heralding"
-    operation_type: "classical_message_exchange"
-    description: "Report elementary Bell-pair generation outcomes to the workflow control function."
-    classical_message_types:
-      - "heralding"
-    support_profile_ref: "critical_quantum_control"
-    payload_types:
-      - "generation_outcomes"
-
-  # Step 4: mark successful Bell-pair halves as occupying quantum memory resources.
-  - step_id: "mem-start-01"
-    operation: "entanglement_memory_occupation_start"
-    operation_type: "resource_state_transition"
-    description: "Mark successfully generated Bell-pair halves as occupying endpoint, access-node, repeater, and remote-QPU memory resources."
-    resource_occupation_ref: "entanglement-mem-occ-01"
-
-  # Step 5: perform entanglement swapping at the selected swapping nodes.
-  - step_id: "swap-01"
+  - step_id: "wf-step-04"
+    name: "entanglement_swapping"
+    step_type: "quantum_operation"
     operation: "entanglement_swapping"
-    operation_type: "quantum_operation"
-    description: "Perform entanglement swapping at the swapping nodes defined in the quantum resource descriptor."
-    operation_condition: "selected_qpath_requires_entanglement_swapping"
-    swapping_nodes_ref: "quantum_resource_descriptor.available_capabilities.protocol_capabilities.swapping_nodes"
-    required_capability_ref: "quantum_resource_descriptor.available_capabilities.protocol_capabilities.entanglement_swapping"
+    description: "Perform swapping at QBS-01 and QR-01 to create end-to-end Bell pairs."
+    depends_on:
+      - "wf-step-03"
+    produces:
+      - "end_to_end_bell_pair_candidates"
 
-  # Step 6: exchange swapping outcomes required to characterize the end-to-end Bell pairs.
-  - step_id: "swap-out-01"
-    operation: "swapping_outcome_exchange"
-    operation_type: "classical_message_exchange"
-    description: "Exchange entanglement-swapping outcomes required to determine the resulting end-to-end Bell-pair state."
-    operation_condition: "selected_qpath_requires_entanglement_swapping"
-    classical_message_types:
-      - "measurement_outcomes"
-    support_profile_ref: "critical_quantum_control"
-    payload_types:
-      - "swapping_outcomes"
+  - step_id: "wf-step-05"
+    name: "swapping_outcome_exchange"
+    step_type: "classical_message_exchange"
+    message_class: "measurement_outcomes"
+    description: "Exchange swapping outcomes and update the end-to-end Bell-pair state."
+    depends_on:
+      - "wf-step-04"
+    produces:
+      - "end_to_end_bell_pair_state_information"
 
-  # Step 7: confirm that the complete end-to-end Bell-pair set is ready for teleportation.
-  - step_id: "bp-ready-01"
-    operation: "end_to_end_bell_pair_set_ready"
-    operation_type: "resource_state_transition"
-    description: "Confirm that the required number of end-to-end Bell pairs is available for teleporting the input qubit set."
-    required_bell_pairs_ref: "service_descriptor.operation_profile.resource_demand.bell_pairs"
-    readiness_condition: "required_bell_pair_set_established"
+  - step_id: "wf-step-06"
+    name: "end_to_end_bell_pair_set_completion"
+    step_type: "workflow_gate"
+    gate_condition: "four_end_to_end_bell_pairs_available"
+    depends_on:
+      - "wf-step-05"
+    produces:
+      - "complete_bell_pair_set"
 
-  # Step 8: perform Bell-state measurements at QUE for the input qubits and local Bell-pair halves.
-  - step_id: "bsm-01"
-    operation: "local_bell_state_measurements_at_que"
-    operation_type: "quantum_operation"
-    description: "Perform Bell-state measurements at QUE between each input qubit and the corresponding local half of an end-to-end Bell pair."
-    input_qubit_source_ref: "service_descriptor.workflow_profile.source_endpoint_ref"
-    teleportation_measurement_node_ref: "service_descriptor.workflow_profile.endpoint_roles.teleportation_measurement_node"
-    requested_teleported_qubits_ref: "service_descriptor.operation_profile.resource_demand.input_qubits_to_teleport"
-    consumed_resource_occupation_refs:
-      - "input-qubit-occ-01"
-      - "entanglement-mem-occ-01"
-    payload_outputs:
-      - "teleportation_bell_state_measurement_outcomes"
+  - step_id: "wf-step-07"
+    name: "delayed_multi_qubit_teleportation_measurements"
+    step_type: "quantum_operation"
+    operation: "bell_state_measurement"
+    description: "Perform Bell-state measurements between input qubits and local Bell-pair halves at QUE-01."
+    depends_on:
+      - "wf-step-06"
+    produces:
+      - "teleportation_measurement_outcomes"
 
-  # Step 9: send teleportation measurement outcomes from QUE to the remote QPU.
-  - step_id: "tel-meas-out-01"
-    operation: "teleportation_measurement_outcome_exchange"
-    operation_type: "classical_message_exchange"
-    description: "Send the Bell-state measurement outcomes required by the remote QPU to reconstruct the teleported qubit states."
-    classical_message_types:
-      - "measurement_outcomes"
-    support_profile_ref: "critical_quantum_control"
-    source_endpoint_ref: "service_descriptor.workflow_profile.source_endpoint_ref"
-    destination_endpoint_ref: "service_descriptor.workflow_profile.destination_endpoint_ref"
-    payload_types:
-      - "teleportation_bell_state_measurement_outcomes"
+  - step_id: "wf-step-08"
+    name: "measurement_result_exchange_and_feed_forward"
+    step_type: "classical_message_exchange"
+    message_class: "feed_forward"
+    description: "Deliver teleportation measurement outcomes and feed-forward information to QPU-01."
+    depends_on:
+      - "wf-step-07"
+    produces:
+      - "correction_information_at_qpu"
 
-  # Step 10: apply Pauli corrections or update the Pauli frame at the remote QPU.
-  - step_id: "pauli-01"
-    operation: "pauli_correction_or_frame_update_at_qpu"
-    operation_type: "classical_control"
-    description: "Apply Pauli corrections or update the Pauli frame at the remote QPU using the received teleportation measurement outcomes."
-    classical_message_types:
-      - "feed_forward"
-    support_profile_ref: "critical_quantum_control"
-    teleportation_correction_node_ref: "service_descriptor.workflow_profile.endpoint_roles.teleportation_correction_node"
-    remote_qpu_ref: "service_descriptor.workflow_profile.remote_qpu_ref"
-    payload_types:
-      - "pauli_correction_information"
-      - "pauli_frame_update"
+  - step_id: "wf-step-09"
+    name: "pauli_correction_or_frame_update"
+    step_type: "quantum_operation"
+    operation: "pauli_correction_or_frame_update"
+    description: "Apply Pauli corrections or update the Pauli frame at QPU-01."
+    depends_on:
+      - "wf-step-08"
+    produces:
+      - "reconstructed_qubits_at_qpu"
 
-  # Step 11: mark the requested teleported qubit set as available at the remote QPU.
-  - step_id: "qpu-ready-01"
-    operation: "teleported_qubit_set_available_at_qpu"
-    operation_type: "resource_state_transition"
-    description: "Mark the requested set of teleported qubits as simultaneously available at the remote QPU."
-    required_qubits_ref: "service_descriptor.operation_profile.resource_demand.input_qubits_to_teleport"
-    remote_qpu_ref: "service_descriptor.workflow_profile.remote_qpu_ref"
-    resource_occupation_ref: "qpu-teleported-qubit-occ-01"
-    readiness_condition: "all_requested_qubits_reconstructed_at_qpu"
+  - step_id: "wf-step-10"
+    name: "remote_qpu_execution_gate"
+    step_type: "workflow_gate"
+    gate_condition: "all_requested_qubits_available_at_qpu"
+    depends_on:
+      - "wf-step-09"
+    produces:
+      - "remote_qpu_operation_can_start"
 
-  # Step 12: launch the remote quantum operation once all teleported qubits are available.
-  - step_id: "qpu-exec-01"
-    operation: "remote_qpu_operation_execution"
-    operation_type: "quantum_processing"
-    description: "Execute the requested quantum operation at the remote QPU after all teleported qubits become available."
-    execution_gate_ref: "service_descriptor.operation_profile.execution_gate"
-    execution_gate: "all_requested_qubits_available_at_qpu"
-    remote_qpu_ref: "service_descriptor.workflow_profile.remote_qpu_ref"
-    requested_operation_ref: "service_descriptor.operation_profile.requested_operation"
-    consumed_resource_occupation_refs:
-      - "qpu-teleported-qubit-occ-01"
+  - step_id: "wf-step-11"
+    name: "completion_acknowledgment"
+    step_type: "classical_message_exchange"
+    message_class: "acknowledgments"
+    description: "Acknowledge teleportation-stage completion and remote-QPU execution readiness."
+    depends_on:
+      - "wf-step-10"
+    produces:
+      - "teleportation_stage_completed"
 
-  # Step 13: acknowledge remote operation completion and update workflow progress.
-  - step_id: "result-ack-01"
-    operation: "remote_operation_completion_acknowledgment"
-    operation_type: "classical_message_exchange"
-    description: "Acknowledge completion of the remote QPU operation and update workflow progress."
-    classical_message_types:
-      - "acknowledgments"
-    support_profile_ref: "critical_quantum_control"
-    source_endpoint_ref: "service_descriptor.workflow_profile.remote_qpu_ref"
-    destination_endpoint_ref: "service_descriptor.workflow_profile.source_endpoint_ref"
-    payload_types:
-      - "remote_operation_completion_ack"
-      - "workflow_progress_update"
-      - "operation_result_metadata"
-
-# ---------------------------------------------------------------------------
-# 5. Classical message bindings
-# ---------------------------------------------------------------------------
-# Mapping between workflow message uses, payload types, and classical support profiles.
-classical_message_bindings:
-
-  - binding_id: "cmb-orch-01"
-    message_type: "orchestration_commands"
-    payload_types:
-      - "workflow_start_command"
-      - "resource_reservation_command"
-      - "support_profile_activation_command"
-      - "remote_qpu_operation_preparation_command"
-      - "adaptation_command"
-    used_by_steps:
-      - "cfg-01"
-    support_profile_ref: "orchestration_control"
-    support_profile_source_ref: "classical_support_descriptor.support_capabilities.support_profile_catalog.support_profiles.orchestration_control"
-
-  - binding_id: "cmb-herald-01"
-    message_type: "heralding"
-    payload_types:
-      - "generation_outcomes"
-    used_by_steps:
-      - "herald-01"
-    support_profile_ref: "critical_quantum_control"
-    support_profile_source_ref: "classical_support_descriptor.support_capabilities.support_profile_catalog.support_profiles.critical_quantum_control"
-
-  - binding_id: "cmb-swap-out-01"
-    message_type: "measurement_outcomes"
-    payload_types:
-      - "swapping_outcomes"
-    used_by_steps:
-      - "swap-out-01"
-    support_profile_ref: "critical_quantum_control"
-    support_profile_source_ref: "classical_support_descriptor.support_capabilities.support_profile_catalog.support_profiles.critical_quantum_control"
-
-  - binding_id: "cmb-tel-meas-01"
-    message_type: "measurement_outcomes"
-    payload_types:
-      - "teleportation_bell_state_measurement_outcomes"
-    used_by_steps:
-      - "tel-meas-out-01"
-    support_profile_ref: "critical_quantum_control"
-    support_profile_source_ref: "classical_support_descriptor.support_capabilities.support_profile_catalog.support_profiles.critical_quantum_control"
-
-  - binding_id: "cmb-pauli-01"
-    message_type: "feed_forward"
-    payload_types:
-      - "pauli_correction_information"
-      - "pauli_frame_update"
-    used_by_steps:
-      - "pauli-01"
-    support_profile_ref: "critical_quantum_control"
-    support_profile_source_ref: "classical_support_descriptor.support_capabilities.support_profile_catalog.support_profiles.critical_quantum_control"
-
-  - binding_id: "cmb-ack-01"
-    message_type: "acknowledgments"
-    payload_types:
-      - "generation_ack"
-      - "remote_operation_completion_ack"
-      - "workflow_progress_update"
-      - "operation_result_metadata"
-    used_by_steps:
-      - "result-ack-01"
-    support_profile_ref: "critical_quantum_control"
-    support_profile_source_ref: "classical_support_descriptor.support_capabilities.support_profile_catalog.support_profiles.critical_quantum_control"
-
-# ---------------------------------------------------------------------------
-# 6. Resource occupation
-# ---------------------------------------------------------------------------
-# Intervals during which workflow resources remain occupied.
-resource_occupation:
-
-  - occupation_id: "entanglement-mem-occ-01"
-    resource_type: "quantum_memory"
-    resource_scope_ref: "quantum_resource_descriptor.available_capabilities.quantum_memory_resources"
-    description: "Quantum memories store generated Bell-pair halves until the corresponding entanglement resources are consumed by teleportation."
-
-    # Entanglement memory occupation starts after successful heralding of elementary Bell-pair generation.
-    starts_after_step: "herald-01"
-    start_condition: "successful_generation_required"
-
-    # Entanglement memory occupation ends after Pauli correction or Pauli-frame update at the remote QPU.
-    ends_after_step: "pauli-01"
-    alternative_end_condition: "attempt_discarded_after_failed_retry"
-
-    # Coherence-time constraint used to evaluate entanglement-resource storage.
-    coherence_constraint_ref: "memory_coherence"
-
-  - occupation_id: "input-qubit-occ-01"
-    resource_type: "input_qubit_memory_at_que"
-    resource_scope_ref: "service_descriptor.workflow_profile.source_endpoint_ref"
-    description: "Input qubits remain available at QUE until the local Bell-state measurements consume them during teleportation."
-
-    # Input qubit occupation starts after workflow configuration.
-    starts_after_step: "cfg-01"
-    start_condition: "input_qubits_ready_at_que"
-
-    # Input qubit occupation ends after local Bell-state measurements at QUE.
-    ends_after_step: "bsm-01"
-
-  - occupation_id: "qpu-teleported-qubit-occ-01"
-    resource_type: "teleported_qubit_memory_at_qpu"
-    resource_scope_ref: "service_descriptor.workflow_profile.remote_qpu_ref"
-    description: "Teleported qubits remain available at the remote QPU until the requested remote quantum operation consumes or processes them."
-
-    # Teleported qubit occupation starts after all requested qubits are reconstructed at the remote QPU.
-    starts_after_step: "qpu-ready-01"
-    start_condition: "all_requested_qubits_reconstructed_at_qpu"
-
-    # Teleported qubit occupation ends after the remote quantum operation has been executed.
-    ends_after_step: "qpu-exec-01"
-
-# ---------------------------------------------------------------------------
-# 7. Dependency graph
-# ---------------------------------------------------------------------------
-# Base execution graph and retry-policy attachment mode.
 dependency_graph:
-
-  graph_type: "DAG_with_bounded_retry_policy"
-  retry_edges_mode: "external_policy_not_graph_edges"
-
-  nodes:
-    - "cfg-01"
-    - "gen-01"
-    - "herald-01"
-    - "mem-start-01"
-    - "swap-01"
-    - "swap-out-01"
-    - "bp-ready-01"
-    - "bsm-01"
-    - "tel-meas-out-01"
-    - "pauli-01"
-    - "qpu-ready-01"
-    - "qpu-exec-01"
-    - "result-ack-01"
-
+  nodes_ref: "workflow_steps"
   edges:
+    - from: "wf-step-01"
+      to: "wf-step-02"
+    - from: "wf-step-02"
+      to: "wf-step-03"
+    - from: "wf-step-03"
+      to: "wf-step-04"
+    - from: "wf-step-04"
+      to: "wf-step-05"
+    - from: "wf-step-05"
+      to: "wf-step-06"
+    - from: "wf-step-06"
+      to: "wf-step-07"
+    - from: "wf-step-07"
+      to: "wf-step-08"
+    - from: "wf-step-08"
+      to: "wf-step-09"
+    - from: "wf-step-09"
+      to: "wf-step-10"
+    - from: "wf-step-10"
+      to: "wf-step-11"
 
-    - from: "cfg-01"
-      to: "gen-01"
-      dependency: "workflow_configuration_required"
+timing_and_retry_policy:
+  completion_deadline_us_ref: "service_descriptor.objective_profile.completion_deadline_us"
+  teleportation_stage_deadline_us: 1000000
+  retry_policy_id: "retry-policy-baseline-01"
+  max_generation_retries_per_required_bell_pair: 3
+  retry_applies_to:
+    - "parallel_elementary_bell_pair_generation"
+  retry_not_allowed_after:
+    - "delayed_multi_qubit_teleportation_measurements"
 
-    - from: "gen-01"
-      to: "herald-01"
-      dependency: "generation_outcome_required"
+quantum_resource_occupation:
+  occupied_resource_type: "quantum_memory_qubits"
+  maximum_storage_time_evidence_ref: "feasibility_descriptor.derived_feasibility_evidence.memory_occupation_time"
+  completion_condition: "all_requested_qubits_reconstructed_at_qpu"
 
-    - from: "herald-01"
-      to: "mem-start-01"
-      dependency: "successful_generation_required"
+classical_message_bindings:
+  heralding_profile_ref: "classical_support_descriptor.traffic_support.support_profile_catalog.critical_quantum_control"
+  measurement_outcomes_profile_ref: "classical_support_descriptor.traffic_support.support_profile_catalog.critical_quantum_control"
+  feed_forward_profile_ref: "classical_support_descriptor.traffic_support.support_profile_catalog.critical_quantum_control"
+  acknowledgments_profile_ref: "classical_support_descriptor.traffic_support.support_profile_catalog.critical_quantum_control"
+  orchestration_profile_ref: "classical_support_descriptor.traffic_support.support_profile_catalog.orchestration_control"
 
-    - from: "mem-start-01"
-      to: "swap-01"
-      dependency: "memory_occupation_required"
-
-    - from: "swap-01"
-      to: "swap-out-01"
-      dependency: "swapping_outcome_required"
-
-    - from: "swap-out-01"
-      to: "bp-ready-01"
-      dependency: "end_to_end_bell_pair_state_known"
-
-    - from: "bp-ready-01"
-      to: "bsm-01"
-      dependency: "required_bell_pair_set_ready"
-
-    - from: "bsm-01"
-      to: "tel-meas-out-01"
-      dependency: "teleportation_measurement_outcomes_required"
-
-    - from: "tel-meas-out-01"
-      to: "pauli-01"
-      dependency: "teleportation_measurement_outcomes_received"
-
-    - from: "pauli-01"
-      to: "qpu-ready-01"
-      dependency: "pauli_frame_or_correction_information_applied"
-
-    - from: "qpu-ready-01"
-      to: "qpu-exec-01"
-      dependency: "all_requested_qubits_available_at_qpu"
-
-    - from: "qpu-exec-01"
-      to: "result-ack-01"
-      dependency: "remote_qpu_operation_completed"
-
-# ---------------------------------------------------------------------------
-# 8. Timing and validity constraints
-# ---------------------------------------------------------------------------
-# Constraints used by admission control, resource reservation, orchestration,
-# monitoring, and feasibility revalidation.
-timing_constraints:
-
-  - constraint_id: "teleportation_stage_completion_deadline"
-    constraint_type: "service_level_deadline"
-    description: "Make the requested teleported qubit set available at the remote QPU before the teleportation-stage deadline."
-    source_ref: "service_descriptor.objective_profile.completion_deadline_us"
-    deadline_scope_ref: "service_descriptor.objective_profile.completion_deadline_scope"
-    applies_to_steps:
-      - "cfg-01"
-      - "gen-01"
-      - "herald-01"
-      - "mem-start-01"
-      - "swap-01"
-      - "swap-out-01"
-      - "bp-ready-01"
-      - "bsm-01"
-      - "tel-meas-out-01"
-      - "pauli-01"
-      - "qpu-ready-01"
-    evaluation_mode: "resolved_at_admission"
-
-  - constraint_id: "remote_operation_launch_condition"
-    constraint_type: "execution_gate"
-    description: "Launch the remote QPU operation after all requested teleported qubits are available at the remote QPU."
-    source_refs:
-      - "service_descriptor.operation_profile.resource_demand.input_qubits_to_teleport"
-      - "service_descriptor.operation_profile.execution_gate"
-      - "operation_sequence.qpu-ready-01.readiness_condition"
-    applies_to_steps:
-      - "qpu-exec-01"
-    evaluation_mode: "checked_during_orchestration"
-
-  - constraint_id: "memory_coherence"
-    constraint_type: "quantum_memory_storage_bound"
-    description: "Memory occupation time must remain within the limiting coherence-time state of the selected quantum path."
-    source_ref: "quantum_resource_descriptor.quality_and_validity.memory_state.limiting_coherence_time_us"
-    applies_to_resource_occupations:
-      - "entanglement-mem-occ-01"
-      - "qpu-teleported-qubit-occ-01"
-    evaluation_mode: "resolved_at_admission_and_revalidated_at_runtime"
-
-  - constraint_id: "fidelity_target"
-    constraint_type: "teleported_qubit_fidelity_bound"
-    description: "The reconstructed qubit set at the remote QPU must satisfy the service fidelity target."
-    source_ref: "service_descriptor.objective_profile.minimum_reconstructed_qubit_fidelity"
-    fidelity_metric_ref: "service_descriptor.objective_profile.fidelity_metric"
-    applies_to_steps:
-      - "qpu-ready-01"
-    evaluation_mode: "resolved_at_admission_and_revalidated_at_runtime"
-
-  - constraint_id: "equivalent_bell_pair_fidelity_threshold"
-    constraint_type: "derived_entanglement_fidelity_bound"
-    description: "The feasibility estimator derives the Bell-pair fidelity threshold required to satisfy the reconstructed-qubit fidelity target."
-    source_ref: "service_descriptor.objective_profile.equivalent_bell_pair_fidelity_threshold_ref"
-    applies_to_steps:
-      - "bp-ready-01"
-    evaluation_mode: "derived_by_feasibility_estimator"
-
-  - constraint_id: "critical_classical_support_latency"
-    constraint_type: "classical_support_latency_statistics"
-    description: "Critical workflow messages must satisfy the mean, high-percentile, and bound latency requirements of the critical classical support profile."
-    source_ref: "classical_support_descriptor.support_capabilities.support_profile_catalog.support_profiles.critical_quantum_control.profile_requirement_envelope"
-    applies_to_message_types:
-      - "heralding"
-      - "acknowledgments"
-      - "measurement_outcomes"
-      - "feed_forward"
-    evaluation_mode: "resolved_at_admission_and_revalidated_at_runtime"
-
-  - constraint_id: "critical_classical_support_jitter"
-    constraint_type: "classical_support_jitter_bound"
-    description: "Critical workflow messages must satisfy the jitter bound of the critical classical support profile."
-    source_ref: "classical_support_descriptor.support_capabilities.support_profile_catalog.support_profiles.critical_quantum_control.profile_requirement_envelope.max_jitter_us"
-    applies_to_message_types:
-      - "heralding"
-      - "acknowledgments"
-      - "measurement_outcomes"
-      - "feed_forward"
-    evaluation_mode: "resolved_at_admission_and_revalidated_at_runtime"
-
-  - constraint_id: "critical_classical_support_packet_loss"
-    constraint_type: "classical_support_packet_loss_bound"
-    description: "Critical workflow messages must satisfy the packet-loss bound of the critical classical support profile."
-    source_ref: "classical_support_descriptor.support_capabilities.support_profile_catalog.support_profiles.critical_quantum_control.profile_requirement_envelope.max_packet_loss_probability"
-    applies_to_message_types:
-      - "heralding"
-      - "acknowledgments"
-      - "measurement_outcomes"
-      - "feed_forward"
-    evaluation_mode: "resolved_at_admission_and_revalidated_at_runtime"
-
-  - constraint_id: "synchronization_support"
-    constraint_type: "classical_support_synchronization_bound"
-    description: "Timing-sensitive workflow messages must satisfy the synchronization requirement exposed by the selected classical support profile and synchronization state."
-    source_refs:
-      - "classical_support_descriptor.support_capabilities.support_profile_catalog.support_profiles.critical_quantum_control.profile_requirement_envelope.max_time_error_ns"
-      - "classical_support_descriptor.state_and_validity.synchronization_state"
-    applies_to_message_types:
-      - "heralding"
-      - "measurement_outcomes"
-      - "feed_forward"
-    evaluation_mode: "resolved_at_admission_and_revalidated_at_runtime"
-
-  - constraint_id: "descriptor_validity"
-    constraint_type: "state_freshness"
-    description: "Workflow admission and reservation require fresh quantum-resource and classical-support state."
-    source_refs:
-      - "quantum_resource_descriptor.quality_and_validity"
-      - "classical_support_descriptor.state_and_validity.state_freshness_policy"
-    evaluation_mode: "resolved_before_admission_and_reservation"
-
-# ---------------------------------------------------------------------------
-# 9. Retry policy
-# ---------------------------------------------------------------------------
-# Bounded retry rules used when elementary Bell-pair generation fails.
-retry_policy:
-
-  retry_policy_id: "retry-policy-01"
-  retry_policy_type: "bounded_generation_retry"
-
-  # Maximum number of additional generation attempts allowed after failed heralding.
-  retry_budget: 2
-
-  retry_scope: "elementary_bell_pair_generation"
-  retryable_steps:
-    - "gen-01"
-    - "herald-01"
-
-  retry_trigger: "failed_heralding"
-  retry_exit_conditions:
-    - "required_bell_pair_set_established"
-    - "retry_budget_exhausted"
-    - "teleportation_stage_completion_deadline_would_be_violated"
-    - "memory_coherence_constraint_would_be_violated"
-
-  retry_evaluation_refs:
-    - "service_descriptor.objective_profile.completion_deadline_us"
-    - "service_descriptor.objective_profile.completion_deadline_scope"
-    - "quantum_resource_descriptor.quality_and_validity.memory_state.limiting_coherence_time_us"
-    - "classical_support_descriptor.state_and_validity.latency_state"
-    - "classical_support_descriptor.state_and_validity.jitter_state"
-
-# ---------------------------------------------------------------------------
-# 10. Optional workflow features
-# ---------------------------------------------------------------------------
-# Workflow features that can be activated by deployment planning or bounded
-# runtime adaptation.
-optional_workflow_features:
-
-  purification:
-    feature_supported_ref: "quantum_resource_descriptor.available_capabilities.protocol_capabilities.entanglement_distillation_supported"
-    supported_modes_ref: "quantum_resource_descriptor.available_capabilities.protocol_capabilities.distillation_modes"
-    workflow_role: "optional_quality_improvement"
-    activation_decision_ref: "service_deployment_descriptor.purification_policy"
-    baseline_mode: "disabled_for_baseline"
-    fallback_allowed: true
-
-  additional_parallel_attempts:
-    feature_supported_ref: "quantum_resource_descriptor.available_capabilities.generation_capacity.parallel_attempts_supported_per_elementary_link"
-    workflow_role: "optional_reliability_or_deadline_margin_improvement"
-    activation_decision_ref: "service_deployment_descriptor.parallel_generation_strategy"
-
-  immediate_teleportation_variant:
-    feature_supported_ref: "service_procedure_catalogue.workflow_variants.immediate_teleportation"
-    workflow_role: "alternative_teleportation_strategy"
-    activation_decision_ref: "service_deployment_descriptor.teleportation_strategy"
-    baseline_mode: "disabled_for_baseline"
-
-  alternative_quantum_path_reselection:
-    feature_source_ref: "quantum_resource_descriptor.available_capabilities.connectivity_context"
-    workflow_role: "bounded_runtime_adaptation"
-    activation_decision_ref: "service_orchestration.adaptation_policy"
-    activation_condition: "selected_quantum_path_degraded_or_infeasible"
-
-  alternative_classical_support_path_reselection:
-    feature_source_ref: "classical_support_descriptor.support_capabilities.connectivity_context"
-    workflow_role: "bounded_runtime_adaptation"
-    activation_decision_ref: "service_orchestration.adaptation_policy"
-    activation_condition: "selected_classical_support_path_degraded_or_infeasible"
-
-# ---------------------------------------------------------------------------
-# 11. Workflow outputs
-# ---------------------------------------------------------------------------
-# Outputs exposed by the workflow for deployment-option generation, admission
-# control, orchestration, monitoring, and feasibility revalidation.
 workflow_outputs:
+  success_condition: >-
+    Required Bell pairs are completed, all input qubits are reconstructed at
+    QPU-01, the reconstructed-qubit fidelity target is satisfied, the
+    teleportation-stage deadline is met, and critical classical-support
+    constraints are not violated.
+  downstream_trigger: "remote_qpu_operation_can_start"
 
-  prepared_entanglement_object:
-    object_type: "end_to_end_bell_pair_set"
-    requested_quantity_ref: "service_descriptor.operation_profile.resource_demand.bell_pairs"
-    fidelity_target_ref: "service_descriptor.objective_profile.equivalent_bell_pair_fidelity_threshold_ref"
-
-  expected_delivery_object:
-    object_type: "teleported_qubit_set_at_qpu"
-    requested_quantity_ref: "service_descriptor.operation_profile.resource_demand.input_qubits_to_teleport"
-    fidelity_target_ref: "service_descriptor.objective_profile.minimum_reconstructed_qubit_fidelity"
-    fidelity_metric_ref: "service_descriptor.objective_profile.fidelity_metric"
-
-  triggered_remote_operation:
-    object_type: "remote_qpu_operation_execution"
-    execution_gate_ref: "service_descriptor.operation_profile.execution_gate"
-    execution_gate: "all_requested_qubits_available_at_qpu"
-    requested_operation_ref: "service_descriptor.operation_profile.requested_operation"
-    remote_qpu_ref: "service_descriptor.workflow_profile.remote_qpu_ref"
-
-  progress_events:
-    - "workflow_configured"
-    - "elementary_generation_started"
-    - "heralding_completed"
-    - "entanglement_memory_occupation_started"
-    - "swapping_completed"
-    - "swapping_outcomes_exchanged"
-    - "end_to_end_bell_pair_set_ready"
-    - "local_bell_state_measurements_completed"
-    - "teleportation_measurement_outcomes_exchanged"
-    - "pauli_correction_or_frame_update_completed"
-    - "teleported_qubit_set_available_at_qpu"
-    - "remote_qpu_operation_completed"
-    - "remote_operation_completion_acknowledged"
-
-  feasibility_evidence_inputs:
-    - "workflow_execution_policy"
-    - "operation_sequence"
-    - "classical_message_bindings"
-    - "resource_occupation"
-    - "dependency_graph"
-    - "timing_constraints"
-    - "retry_policy"
-    - "optional_workflow_features"
-
-# ---------------------------------------------------------------------------
-# 12. Ownership and update rules
-# ---------------------------------------------------------------------------
 ownership:
-
-  # Function responsible for creating and maintaining the service-specific workflow instance.
   owner: "service_request_management"
-
-  # Catalogue responsible for maintaining the reusable workflow template.
-  template_owner: "service_procedure_catalogue"
-
-  # Information sources used to populate and refresh this descriptor.
   data_sources:
-    - "service_descriptor"
     - "service_procedure_catalogue"
+    - "service_descriptor"
     - "quantum_resource_descriptor"
     - "classical_support_descriptor"
-    - "operator_policy_configuration"
 
-  update_semantics:
-
-    # Events that trigger workflow descriptor creation or refresh.
-    triggers:
-      - "request_creation"
-      - "service_descriptor_update"
-      - "catalogue_update"
-      - "workflow_template_revision"
-      - "quantum_resource_descriptor_update"
-      - "classical_support_descriptor_update"
-      - "operator_policy_update"
-      - "deployment_option_generation_update"
-      - "runtime_adaptation_update"
-
-    # Sections that may be refreshed when the service request, catalogue,
-    # resource state, support state, deployment options, or policies change.
-    refreshable_sections:
-      - "input_descriptor_refs"
-      - "workflow_objective_refs"
-      - "workflow_resource_refs"
-      - "workflow_execution_policy"
-      - "operation_sequence"
-      - "classical_message_bindings"
-      - "resource_occupation"
-      - "dependency_graph"
-      - "timing_constraints"
-      - "retry_policy"
-      - "optional_workflow_features"
-
-    # Sections customized for this service-specific workflow instance.
-    instance_editable_sections:
-      - "service_ref"
-      - "input_descriptor_refs"
-      - "workflow_objective_refs"
-      - "workflow_resource_refs"
-      - "workflow_execution_policy"
-      - "timing_constraints"
-      - "retry_policy"
-      - "optional_workflow_features"
-
-    # Sections governed by the reusable workflow template.
-    template_controlled_sections:
-      - "operation_sequence"
-      - "classical_message_bindings"
-      - "resource_occupation"
-      - "dependency_graph"
-      - "workflow_outputs"
+update_semantics:
+  triggers:
+    - "workflow_template_update"
+    - "service_request_update"
+    - "deployment_variant_selection"
+    - "workflow_progress_update"
+  refreshable_sections:
+    - "workflow_steps"
+    - "dependency_graph"
+    - "timing_and_retry_policy"
+    - "workflow_outputs"

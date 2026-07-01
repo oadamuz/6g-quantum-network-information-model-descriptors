@@ -2,14 +2,14 @@
 
 This repository contains illustrative YAML descriptor instances for managing quantum services over hybrid 6G--quantum infrastructures. The examples follow the descriptor-based information model proposed in the manuscript:
 
-> **Information Model and Management Architecture for Quantum Services over Hybrid 6G--Quantum Infrastructures**  
-> Oscar Adamuz-Hinojosa and Jonathan Prados-Garzon
+> Information Model and Management Architecture for Quantum Services over Hybrid 6G--Quantum Infrastructures  
+> Oscar Adamuz-Hinojosa, Jonathan Prados-Garzon, Natalia Chinchilla-Romero, and Juan M. Lopez-Soler
 
 The repository is intended to provide machine-readable examples of the descriptor instances discussed in the paper. The descriptors are aligned with the illustrative remote quantum-execution service and feasibility-accounting example presented in Section IV and Table II of the manuscript.
 
 ## Scope
 
-The descriptors describe a remote quantum-execution service in which an authorized quantum-enabled user equipment (QUE) transfers four input qubits to a remote quantum processing unit (QPU) through delayed multi-qubit teleportation. The remote QPU operation is treated as a gated downstream step: it can start only after all requested qubits have been reconstructed at the remote QPU.
+The descriptors describe a remote quantum-execution service in which an authorized quantum-enabled user equipment (QUE) transfers four input qubits to a remote quantum processing unit (QPU) through delayed multi-qubit teleportation. The remote-QPU operation is treated as a gated downstream step: it can start only after all requested qubits have been reconstructed at the remote QPU.
 
 The numerical feasibility evidence focuses on the teleportation stage that enables the downstream remote-QPU operation. These values are illustrative and simulation-backed; they should not be interpreted as a general validation claim for all hybrid 6G--quantum deployments.
 
@@ -23,6 +23,7 @@ The numerical feasibility evidence focuses on the teleportation stage that enabl
 ├── workflow_descriptor.yaml
 ├── deployment_descriptor.yaml
 ├── feasibility_descriptor.yaml
+├── LICENSE
 └── README.md
 ```
 
@@ -30,19 +31,19 @@ The numerical feasibility evidence focuses on the teleportation stage that enabl
 
 | File | Descriptor type | Purpose |
 |---|---|---|
-| `service_descriptor.yaml` | `service_descriptor` | Captures the tenant-facing quantum-service request, including the operation type, endpoints, service objectives, resource demand, workflow reference, and policy constraints. |
-| `quantum_resource_descriptor.yaml` | `quantum_resource_descriptor` | Captures the quantum-domain context used by planning and admission control, including the selected quantum path, memory state, Bell-pair generation capabilities, swapping support, QPU availability, and validity information. |
+| `service_descriptor.yaml` | `service_descriptor` | Captures the tenant-facing quantum-service request, including the operation type, endpoints, service objectives, quantum-resource demand, workflow reference, and policy constraints. |
+| `quantum_resource_descriptor.yaml` | `quantum_resource_descriptor` | Captures the quantum-resource context used by planning and admission control, including the selected quantum path, memory state, Bell-pair generation capabilities, swapping support, QPU availability, and validity information. |
 | `classical_support_descriptor.yaml` | `classical_support_descriptor` | Captures the 6G/classical-support context, including the selected support path, slice/QoS treatment, latency, jitter, packet loss, synchronization, edge-control reachability, telemetry, and validity information. |
-| `workflow_descriptor.yaml` | `service_workflow_descriptor` | Captures the ordered quantum--classical procedure, including Bell-pair generation, heralding, swapping, measurement-result exchange, Pauli correction, retry handling, and remote-QPU execution gating. |
-| `deployment_descriptor.yaml` | `service_deployment_descriptor` | Captures one deployable realization of the requested service by binding the service descriptor, quantum resources, classical-support option, and workflow variant. |
-| `feasibility_descriptor.yaml` | `feasibility_descriptor` | Captures the reusable feasibility evidence associated with the evaluated deployment option, including fidelity, timing, reliability, support-plane margins, validity, confidence, and admission status. |
+| `workflow_descriptor.yaml` | `service_workflow_descriptor` | Captures the ordered quantum--classical workflow, including Bell-pair generation, heralding, swapping, measurement-result exchange, Pauli correction, retry handling, and remote-QPU execution gating. |
+| `deployment_descriptor.yaml` | `service_deployment_descriptor` | Captures one deployable realization of the requested service by binding the service descriptor, the quantum-resource option, the 6G/classical-support option, and the workflow variant. |
+| `feasibility_descriptor.yaml` | `feasibility_descriptor` | Captures the explicit feasibility assessment record associated with the evaluated deployment alternative, including fidelity, timing, reliability, classical-support margins, validity, confidence, and admission status. |
 
 ## Example service
 
 The example models the following service request:
 
 | Attribute | Value |
-|---|---:|
+|---|---|
 | Service type | Remote quantum execution |
 | Quantum transfer mechanism | Delayed multi-qubit teleportation |
 | Input qubits to teleport | 4 |
@@ -96,11 +97,31 @@ feasibility_descriptor.yaml
 The intended lifecycle is:
 
 1. A tenant request is formalized as a `service_descriptor`.
-2. Current quantum-domain and 6G/classical-support conditions are represented through domain descriptors.
-3. The executable quantum--classical procedure is represented through a workflow descriptor.
-4. Candidate deployment options bind the service, resources, support plane, and workflow.
-5. Admission control evaluates each candidate and stores the evidence in a feasibility descriptor.
-6. Runtime telemetry can refresh the active descriptors and trigger feasibility re-evaluation or bounded adaptation.
+2. Current quantum-resource and 6G/classical-support conditions are represented through the `quantum_resource_descriptor` and `classical_support_descriptor`.
+3. The ordered quantum--classical workflow is represented through a `service_workflow_descriptor`.
+4. Deployment alternatives bind the service request, quantum-resource option, 6G/classical-support option, and service workflow.
+5. Admission control evaluates each deployment alternative and stores the explicit feasibility assessment record in a `feasibility_descriptor`.
+6. Runtime telemetry can refresh descriptor state, update feasibility-status flags, and trigger bounded adaptation or reassessment when admitted margins become stale, marginal, or violated.
+
+## Classical-support latency values
+
+Critical quantum-control traffic is aligned with the manuscript example:
+
+```yaml
+target_mean_one_way_latency_us: 10000
+target_p95_one_way_latency_us: 23000
+max_one_way_latency_us: 25000
+```
+
+The feasibility evidence uses the 23 ms high-percentile latency value against a 25 ms one-way latency bound. Orchestration traffic uses a looser envelope:
+
+```yaml
+target_mean_one_way_latency_us: 20000
+target_p95_one_way_latency_us: 30000
+max_one_way_latency_us: 50000
+```
+
+These envelopes avoid inconsistent statistics such as a mean latency larger than the p95 latency or the maximum admitted bound.
 
 ## Basic validation
 
@@ -141,10 +162,9 @@ If you use these descriptor examples, please cite the associated manuscript:
 
 ```bibtex
 @article{AdamuzHinojosa2026QuantumServiceDescriptors,
-  author  = {Oscar Adamuz-Hinojosa and Jonathan Prados-Garzon},
+  author  = {Oscar Adamuz-Hinojosa and Jonathan Prados-Garzon and Natalia Chinchilla-Romero and Juan M. Lopez-Soler},
   title   = {{Information Model and Management Architecture for Quantum Services over Hybrid 6G--Quantum Infrastructures}},
   journal = {Submitted manuscript},
   year    = {2026}
 }
 ```
-

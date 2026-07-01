@@ -1,568 +1,267 @@
-# Version of the descriptor structure.
-# Example values: "0.1-draft", "1.0".
-# This field allows future schema changes while preserving compatibility.
 schema_version: "0.1-draft"
-
-# Type of descriptor.
-# This descriptor stores reusable feasibility evidence associated with one evaluated deployment option.
 descriptor_type: "feasibility_descriptor"
-
-# Unique identifier of this descriptor instance.
 descriptor_id: "feasibility_descriptor-01"
-
-# Revision of this descriptor instance.
-descriptor_revision: "rev-04"
-
-# Unique identifier of the feasibility assessment.
 feasibility_id: "feas-01"
-
-# Deployment option evaluated by this feasibility descriptor.
+service_ref: "svc-01"
 deployment_ref: "depl-01"
 
-# Service associated with the evaluated deployment.
-service_ref: "svc-01"
-
-# Current status of the feasibility assessment.
-assessment_status: "simulation_backed_assessment_completed"
-
-# ---------------------------------------------------------------------------
-# 1. Assessment context
-# ---------------------------------------------------------------------------
-# Context in which this feasibility evidence was generated.
 assessment_context:
+  evaluated_deployment_descriptor_ref: "service_deployment_descriptor-01"
+  assessment_time_utc: "2026-06-09T00:00:00Z"
+  assessment_stage: "pre_admission"
+  assessment_scope: "teleportation_stage_enabling_remote_qpu_execution"
+  evidence_input_refs:
+    service_descriptor_ref: "service_descriptor-01"
+    quantum_resource_descriptor_ref: "quantum_resource_descriptor-01"
+    classical_support_descriptor_ref: "classical_support_descriptor-01"
+    workflow_descriptor_ref: "service_workflow_descriptor-01"
+  snapshot_policy:
+    require_consistent_descriptor_validity: true
+    require_refresh_before_admission: true
 
-  # Type of feasibility assessment.
-  assessment_type: "pre_admission_feasibility_assessment"
+estimation_methods:
+  primary_estimator:
+    estimator_type: "simulation_backed"
+    estimator_ref: "delayed_multi_qubit_teleportation_simulator_v0.1"
+    source_publication_ref: "AdamuzHinojosa2026QubitTeleportation"
+    description: >-
+      Estimator accounts for Bell-pair generation, storage-time evolution,
+      memory-induced fidelity degradation, and selected classical-support
+      constraints.
+  additional_methods:
+    - "telemetry_calibrated_latency_model"
+    - "analytical_descriptor_consistency_checks"
+  confidence_model:
+    confidence_level: "illustrative_simulation_backed"
+    confidence_score: 0.95
+    confidence_interpretation: >-
+      Confidence value is illustrative and denotes that the example is supported
+      by simulation-backed feasibility accounting, not by a general deployment
+      validation campaign.
 
-  # Management function that produced the feasibility evidence.
-  generated_by: "admission_control"
+constraint_targets:
+  reconstructed_qubit_fidelity:
+    target: 0.85
+    comparison: ">="
+  teleportation_stage_completion_time_us:
+    target: 1000000
+    comparison: "<="
+  link_level_bell_pair_generation_success:
+    operational_bound: 0.95
+    comparison: ">="
+  teleportation_stage_service_reliability:
+    target: 0.95
+    comparison: ">="
+  memory_occupation_time_us:
+    bound: 10000000
+    comparison: "<="
+  critical_support_latency_us:
+    bound: 25000
+    statistic_used: "p95_one_way_latency"
+    comparison: "<="
+  packet_loss_probability:
+    bound: 0.001
+    comparison: "<="
+  synchronization_error_ns:
+    bound: 1000
+    comparison: "<="
 
-  # Time at which the feasibility assessment was produced.
-  evaluation_time_utc: "2026-06-09T00:00:00Z"
-
-  # Deployment descriptor evaluated by admission control.
-  deployment_descriptor_ref: "service_deployment_descriptor-01"
-
-  # Consistent snapshot used to evaluate this deployment option.
-  # The detailed snapshot is stored in the deployment descriptor to avoid duplication here.
-  input_state_snapshot_ref: "service_deployment_descriptor.input_state_snapshot"
-
-  # Policy used to build the assessment input.
-  snapshot_policy: "consistent_cross_descriptor_snapshot"
-
-# ---------------------------------------------------------------------------
-# 2. Evidence input references
-# ---------------------------------------------------------------------------
-# Minimal cross-descriptor references used to compute the feasibility evidence.
-# Detailed service requirements, resource state, support state, and deployment choices
-# remain in their original descriptors.
-evidence_input_refs:
-
-  # Service-level demand and objectives.
-  service_objectives_ref: "service_descriptor.objective_profile"
-  service_resource_demand_ref: "service_descriptor.operation_profile.resource_demand"
-
-  # Candidate deployment option being evaluated.
-  deployment_option_ref: "service_deployment_descriptor-01"
-  deployment_quantum_option_ref: "service_deployment_descriptor.quantum_resource_option"
-  deployment_classical_support_option_ref: "service_deployment_descriptor.classical_support_option"
-  deployment_workflow_variant_ref: "service_deployment_descriptor.workflow_variant"
-
-  # Quantum-resource state used as evidence.
-  quantum_resource_state_refs:
-    link_quality_state_ref: "quantum_resource_descriptor.quality_and_validity.link_quality_state"
-    memory_state_ref: "quantum_resource_descriptor.quality_and_validity.memory_state"
-    teleportation_state_ref: "quantum_resource_descriptor.quality_and_validity.teleportation_state"
-    qpu_state_ref: "quantum_resource_descriptor.quality_and_validity.qpu_state"
-
-  # Classical-support state used as evidence.
-  classical_support_state_refs:
-    latency_state_ref: "classical_support_descriptor.state_and_validity.latency_state"
-    jitter_state_ref: "classical_support_descriptor.state_and_validity.jitter_state"
-    packet_loss_state_ref: "classical_support_descriptor.state_and_validity.packet_loss_state"
-    slice_qos_state_ref: "classical_support_descriptor.state_and_validity.slice_qos_state"
-    edge_cloud_state_ref: "classical_support_descriptor.state_and_validity.edge_cloud_state"
-    qpu_control_endpoint_state_ref: "classical_support_descriptor.state_and_validity.qpu_control_endpoint_state"
-    synchronization_state_ref: "classical_support_descriptor.state_and_validity.synchronization_state"
-
-  # Workflow information used as evidence.
-  workflow_refs:
-    execution_policy_ref: "service_workflow_descriptor.workflow_execution_policy"
-    dependency_graph_ref: "service_workflow_descriptor.dependency_graph"
-    resource_occupation_ref: "service_workflow_descriptor.resource_occupation"
-    retry_policy_ref: "service_workflow_descriptor.retry_policy"
-
-# ---------------------------------------------------------------------------
-# 3. Estimation method
-# ---------------------------------------------------------------------------
-# Compact description of the method used to generate the evidence.
-# The internal mathematical model is not expanded here; this descriptor stores
-# the resulting feasibility evidence and its margins.
-estimation_method:
-
-  # Method type used by admission control.
-  method_type: "simulation_backed_estimator"
-
-  # Local reference to the simulator-backed estimator used in the manuscript example.
-  method_ref: "delayed_multi_qubit_teleportation_simulator_v0.1"
-
-  # Purpose of this model execution.
-  purpose: "fast_pre_admission_feasibility_accounting"
-
-  # Evaluated service class.
-  evaluated_service_class: "remote_quantum_execution_via_delayed_multi_qubit_teleportation"
-
-  # Computational mode.
-  computational_mode: "simulation_backed_pre_admission_feasibility_accounting"
-
-  # Whether simulation is required for this feasibility assessment.
-  simulation_required: true
-
-  # Whether this evidence may be reused by admission control and runtime revalidation
-  # until the validity interval expires.
-  reusable_evidence: true
-
-  # Main outputs generated by the estimator and stored in this descriptor.
-  model_outputs:
-    - "predicted_reconstructed_qubit_fidelity"
-    - "predicted_teleportation_stage_completion_time_us"
-    - "teleportation_stage_completion_time_slack_us"
-    - "aggregate_bell_pair_set_completion_probability"
-    - "bell_pair_completion_probability_margin"
-    - "predicted_service_reliability"
-    - "service_reliability_margin"
-    - "memory_occupation_time_us"
-    - "decoherence_margin_us"
-    - "memory_coherence_slack_us"
-    - "classical_support_latency_margin_us"
-    - "classical_support_latency_slack_us"
-    - "packet_loss_margin"
-    - "synchronization_margin_ns"
-    - "bottleneck_resource"
-    - "admission_status"
-
-  # Status of the numerical values in this example descriptor.
-  # The values below are taken from the manuscript Section IV and Table II.
-  output_value_policy:
-    contains_example_values: true
-    replacement_required_before_public_release: false
-    replacement_source: "manuscript_section_iv_table_ii"
-
-# ---------------------------------------------------------------------------
-# 4. Derived feasibility evidence
-# ---------------------------------------------------------------------------
-# Main evidence produced by the feasibility estimator.
-# These fields are the distinctive contribution of the feasibility descriptor.
+# Derived evidence follows the margin convention used in the manuscript table:
+# for <= constraints, a negative margin indicates the estimated value is below
+# the bound; for >= constraints, a positive margin indicates that the estimated
+# value is above the target.
 derived_feasibility_evidence:
-
-  # Fidelity evidence for the reconstructed qubit set at the remote QPU.
-  fidelity_evidence:
-    predicted_reconstructed_qubit_fidelity: 0.963
-    target_value: 0.85
-    target_ref: "service_descriptor.objective_profile.minimum_reconstructed_qubit_fidelity"
-    fidelity_margin: 0.113
-    evaluation_point: "teleported_qubit_set_available_at_qpu"
-    status: "satisfied"
-
-  # Timing evidence for the teleportation stage.
-  timing_evidence:
-    predicted_completion_time_us: 368115
-    deadline_value_us: 1000000
-    deadline_ref: "service_descriptor.objective_profile.completion_deadline_us"
-    deadline_scope_ref: "service_descriptor.objective_profile.completion_deadline_scope"
-    # Table-II margin convention for <= constraints: estimated value minus upper bound.
-    # Negative values therefore indicate that the constraint is satisfied.
-    completion_time_margin_us: -631885
-    # Positive remaining slack, useful for runtime monitoring.
-    completion_time_slack_us: 631885
-    status: "satisfied"
-
-  # Bell-pair generation evidence for the selected deployment.
-  generation_evidence:
-    aggregate_required_bell_pair_set_completion_probability: ">0.9999"
-    operational_bound_probability: 0.95
-    bell_pair_completion_probability_margin: ">0.0499"
-    bottleneck_elementary_link_ref: "not_reported_in_manuscript_table_ii"
-    link_level_input_state_ref: "quantum_resource_descriptor.quality_and_validity.link_quality_state"
-    status: "satisfied"
-
-  # Service-level reliability evidence.
-  reliability_evidence:
-    predicted_service_reliability: ">0.9999"
-    target_value: 0.95
-    target_ref: "service_descriptor.objective_profile.service_reliability_target"
-    service_reliability_margin: ">0.0499"
-    reliability_metric_ref: "service_descriptor.objective_profile.reliability_metric"
-    status: "satisfied"
-
-  # Decoherence and storage-time evidence.
-  decoherence_evidence:
-    max_storage_time_us: 322100
-    coherence_time_bound_us: 10000000
-    limiting_coherence_time_ref: "quantum_resource_descriptor.quality_and_validity.memory_state.limiting_coherence_time_us"
-    # Table-II margin convention for <= constraints: occupation time minus coherence-time bound.
-    memory_coherence_margin_us: -9677900
-    # Positive remaining coherence-time slack.
-    memory_coherence_slack_us: 9677900
-    bottleneck_memory_node_ref: "not_reported_in_manuscript_table_ii"
-    status: "satisfied"
-
-  # Classical-support evidence.
-  classical_support_evidence:
-    critical_support_profile_ref: "critical_quantum_control"
-    critical_support_latency_us: 23000
-    latency_bound_us: 25000
-    # Table-II margin convention for <= constraints: estimated value minus upper bound.
-    latency_margin_us: -2000
-    latency_slack_us: 2000
-    # Jitter is part of the support-plane state but no Table-II numerical jitter value is reported.
-    jitter_margin_us: "not_reported_in_manuscript_table_ii"
-    estimated_packet_loss_probability: 0.00004
-    packet_loss_bound_probability: 0.001
-    packet_loss_margin: -0.00096
-    packet_loss_slack: 0.00096
-    synchronization_accuracy_ns: 100
-    synchronization_bound_ns: 1000
-    synchronization_margin_ns: -900
-    synchronization_slack_ns: 900
-    source_state_refs:
-      - "classical_support_descriptor.state_and_validity.latency_state"
-      - "classical_support_descriptor.state_and_validity.jitter_state"
-      - "classical_support_descriptor.state_and_validity.packet_loss_state"
-      - "classical_support_descriptor.state_and_validity.synchronization_state"
-    status: "satisfied"
-
-  # Policy and descriptor-consistency evidence.
-  policy_and_consistency_evidence:
-    descriptor_consistency_status: "consistent"
-    policy_compliance_status: "satisfied"
-    snapshot_freshness_status: "fresh_at_assessment_time"
-    source_refs:
-      - "service_deployment_descriptor.input_state_snapshot"
-      - "service_deployment_descriptor.reservation_and_orchestration_plan"
-      - "operator_policy_configuration"
-
-# ---------------------------------------------------------------------------
-# 5. Evidence dependency summary
-# ---------------------------------------------------------------------------
-# High-level explanation of how the feasibility evidence depends on the referenced
-# descriptors. This section provides traceability without expanding the internal
-# mathematical model.
-evidence_dependency_summary:
-
-  # Fidelity evidence dependency.
-  fidelity_evidence_depends_on:
-    - "quantum_resource_descriptor.quality_and_validity.link_quality_state"
-    - "quantum_resource_descriptor.quality_and_validity.memory_state"
-    - "service_deployment_descriptor.quantum_resource_option.swapping_strategy"
-    - "service_deployment_descriptor.quantum_resource_option.teleportation_strategy"
-    - "service_descriptor.objective_profile.minimum_reconstructed_qubit_fidelity"
-
-  # Timing evidence dependency.
-  timing_evidence_depends_on:
-    - "service_workflow_descriptor.dependency_graph"
-    - "service_workflow_descriptor.retry_policy"
-    - "classical_support_descriptor.state_and_validity.latency_state"
-    - "classical_support_descriptor.state_and_validity.jitter_state"
-    - "service_descriptor.objective_profile.completion_deadline_us"
-
-  # Generation evidence dependency.
-  generation_evidence_depends_on:
-    - "quantum_resource_descriptor.quality_and_validity.link_quality_state"
-    - "service_deployment_descriptor.quantum_resource_option.bell_pair_generation_strategy"
-    - "service_workflow_descriptor.retry_policy"
-    - "service_descriptor.operation_profile.resource_demand.bell_pairs"
-
-  # Reliability evidence dependency.
-  reliability_evidence_depends_on:
-    - "derived_feasibility_evidence.generation_evidence"
-    - "derived_feasibility_evidence.fidelity_evidence"
-    - "derived_feasibility_evidence.timing_evidence"
-    - "service_descriptor.objective_profile.service_reliability_target"
-
-  # Decoherence evidence dependency.
-  decoherence_evidence_depends_on:
-    - "service_workflow_descriptor.resource_occupation"
-    - "quantum_resource_descriptor.quality_and_validity.memory_state"
-    - "service_deployment_descriptor.workflow_variant"
-
-  # Classical-support evidence dependency.
-  classical_support_evidence_depends_on:
-    - "service_deployment_descriptor.classical_support_option"
-    - "classical_support_descriptor.state_and_validity.latency_state"
-    - "classical_support_descriptor.state_and_validity.jitter_state"
-    - "classical_support_descriptor.state_and_validity.packet_loss_state"
-    - "classical_support_descriptor.state_and_validity.synchronization_state"
-
-# ---------------------------------------------------------------------------
-# 6. Constraint evaluation summary
-# ---------------------------------------------------------------------------
-# Compact list of evaluated constraints and margins.
-# Detailed inputs are referenced, not duplicated.
-constraint_evaluation_summary:
-
-  - constraint_id: "qubit_demand_satisfaction"
-    constraint_type: "resource_demand"
-    source_ref: "service_descriptor.operation_profile.resource_demand.input_qubits_to_teleport"
-    margin: 0
-    status: "satisfied"
-
-  - constraint_id: "bell_pair_demand_satisfaction"
-    constraint_type: "resource_demand"
-    source_ref: "service_descriptor.operation_profile.resource_demand.bell_pairs"
-    margin: 0
-    status: "satisfied"
-
-  - constraint_id: "remote_qpu_capacity"
-    constraint_type: "resource_capacity"
-    source_ref: "quantum_resource_descriptor.quality_and_validity.qpu_state.available_logical_qubits"
-    margin: 4
-    status: "satisfied"
-
-  - constraint_id: "reconstructed_qubit_fidelity"
-    constraint_type: "fidelity"
-    source_ref: "service_descriptor.objective_profile.minimum_reconstructed_qubit_fidelity"
+  reconstructed_qubit_fidelity:
+    evidence_item: "reconstructed_qubit_fidelity"
+    main_descriptor_inputs:
+      - "service_descriptor.objective_profile"
+      - "quantum_resource_descriptor.quality_and_validity.link_quality_state"
+      - "quantum_resource_descriptor.quality_and_validity.memory_state"
+      - "deployment_descriptor.quantum_resource_option.swapping_strategy"
+      - "workflow_descriptor.workflow_steps"
+    estimated_value: 0.963
+    target_or_bound: 0.85
     margin: 0.113
-    status: "satisfied"
+    status: "admit"
 
-  - constraint_id: "teleportation_stage_deadline"
-    constraint_type: "timing"
-    source_ref: "service_descriptor.objective_profile.completion_deadline_us"
+  teleportation_stage_completion_time:
+    evidence_item: "teleportation_stage_completion_time"
+    main_descriptor_inputs:
+      - "workflow_descriptor.dependency_graph"
+      - "workflow_descriptor.timing_and_retry_policy"
+      - "deployment_descriptor.quantum_resource_option.generation_strategy"
+      - "classical_support_descriptor.state_and_validity.latency_state"
+    estimated_value_us: 368115
+    estimated_value_ms: 368.115
+    target_or_bound_us: 1000000
     margin_us: -631885
+    margin_ms: -631.885
     slack_us: 631885
-    status: "satisfied"
+    status: "admit"
 
-  - constraint_id: "service_reliability"
-    constraint_type: "reliability"
-    source_ref: "service_descriptor.objective_profile.service_reliability_target"
-    margin: ">0.0499"
-    status: "satisfied"
+  link_level_bell_pair_generation_success:
+    evidence_item: "link_level_bell_pair_generation_success"
+    main_descriptor_inputs:
+      - "quantum_resource_descriptor.quality_and_validity.link_quality_state"
+      - "deployment_descriptor.quantum_resource_option.elementary_links"
+      - "deployment_descriptor.quantum_resource_option.generation_strategy"
+    estimated_value: 0.9999
+    estimated_value_relation: ">"
+    target_or_bound: 0.95
+    margin: 0.0499
+    margin_relation: ">"
+    status: "admit"
 
-  - constraint_id: "memory_coherence"
-    constraint_type: "quantum_memory_storage"
-    source_ref: "quantum_resource_descriptor.quality_and_validity.memory_state.limiting_coherence_time_us"
+  teleportation_stage_service_reliability:
+    evidence_item: "teleportation_stage_service_reliability"
+    main_descriptor_inputs:
+      - "derived_feasibility_evidence.link_level_bell_pair_generation_success"
+      - "derived_feasibility_evidence.reconstructed_qubit_fidelity"
+      - "derived_feasibility_evidence.teleportation_stage_completion_time"
+      - "constraint_targets.packet_loss_probability"
+      - "service_descriptor.objective_profile.service_reliability_target"
+    estimated_value: 0.9999
+    estimated_value_relation: ">"
+    target_or_bound: 0.95
+    margin: 0.0499
+    margin_relation: ">"
+    status: "admit"
+
+  memory_occupation_time:
+    evidence_item: "memory_occupation_time"
+    main_descriptor_inputs:
+      - "workflow_descriptor.quantum_resource_occupation"
+      - "quantum_resource_descriptor.quality_and_validity.memory_state"
+    estimated_value_us: 322100
+    estimated_value_ms: 322.100
+    target_or_bound_us: 10000000
+    target_or_bound_s: 10
     margin_us: -9677900
+    margin_ms: -9677.900
     slack_us: 9677900
-    status: "satisfied"
+    status: "admit"
 
-  - constraint_id: "critical_classical_support_latency"
-    constraint_type: "classical_support_latency"
-    source_ref: "classical_support_descriptor.state_and_validity.latency_state"
+  critical_support_latency:
+    evidence_item: "critical_support_latency"
+    main_descriptor_inputs:
+      - "deployment_descriptor.classical_support_option.selected_support_profile"
+      - "classical_support_descriptor.state_and_validity.latency_state.estimated_p95_one_way_latency_us"
+    estimated_value_us: 23000
+    estimated_value_ms: 23.000
+    statistic_used: "p95_one_way_latency"
+    target_or_bound_us: 25000
+    target_or_bound_ms: 25.000
     margin_us: -2000
+    margin_ms: -2.000
     slack_us: 2000
-    status: "satisfied"
+    status: "admit"
 
-  - constraint_id: "critical_classical_support_jitter"
-    constraint_type: "classical_support_jitter"
-    source_ref: "classical_support_descriptor.state_and_validity.jitter_state"
-    margin_us: "not_reported_in_manuscript_table_ii"
-    status: "satisfied"
-
-  - constraint_id: "critical_classical_support_packet_loss"
-    constraint_type: "classical_support_packet_loss"
-    source_ref: "classical_support_descriptor.state_and_validity.packet_loss_state"
+  packet_loss:
+    evidence_item: "packet_loss"
+    main_descriptor_inputs:
+      - "classical_support_descriptor.state_and_validity.packet_loss_state"
+      - "deployment_descriptor.classical_support_option.selected_support_profile"
+    estimated_value: 0.00004
+    target_or_bound: 0.001
     margin: -0.00096
     slack: 0.00096
-    status: "satisfied"
+    status: "admit"
 
-  - constraint_id: "synchronization_support"
-    constraint_type: "synchronization"
-    source_ref: "classical_support_descriptor.state_and_validity.synchronization_state"
+  synchronization:
+    evidence_item: "synchronization"
+    main_descriptor_inputs:
+      - "classical_support_descriptor.state_and_validity.synchronization_state"
+      - "deployment_descriptor.classical_support_option.synchronization_support"
+    estimated_value_ns: 100
+    target_or_bound_ns: 1000
     margin_ns: -900
     slack_ns: 900
-    status: "satisfied"
+    status: "admit"
 
-  - constraint_id: "descriptor_state_freshness"
-    constraint_type: "state_freshness"
-    source_ref: "service_deployment_descriptor.input_state_snapshot"
-    margin: "within_validity_horizon"
-    status: "satisfied"
+  admission_decision:
+    evidence_item: "admission_decision"
+    main_descriptor_inputs:
+      - "constraint_evaluation_summary"
+      - "bottleneck_quantum_resource"
+      - "validity_interval"
+      - "confidence_level"
+      - "policy_compliance"
+    estimated_value: "admit"
+    target_or_bound: "all_hard_constraints_satisfied"
+    status: "admit"
 
-  - constraint_id: "operator_policy_compliance"
-    constraint_type: "policy"
-    source_ref: "operator_policy_configuration"
-    margin: "policy_compliant"
-    status: "satisfied"
-
-# ---------------------------------------------------------------------------
-# 7. Aggregated feasibility state
-# ---------------------------------------------------------------------------
-# Final feasibility classification used by admission control.
-feasibility_state:
-
-  # Overall feasibility status.
-  status: "admissible"
-
-  # Admission-control recommendation.
-  admission_recommendation: "admit"
-
-  # Deployment selected if this recommendation is accepted.
-  selected_deployment_ref: "depl-01"
-
-  # Constraints that are not satisfied.
+constraint_evaluation_summary:
+  overall_status: "admit"
   violated_constraints: []
+  marginal_constraints:
+    - constraint_id: "critical_support_latency"
+      reason: "smallest absolute latency slack among the explicit critical-support constraints"
+      slack_us: 2000
+  bottleneck_quantum_resource:
+    resource_type: "quantum_memory_coherence_time"
+    status: "not_bottleneck_for_baseline"
+    slack_us: 9677900
+  bottleneck_classical_support_constraint:
+    constraint_type: "critical_support_latency"
+    status: "admissible_with_margin"
+    slack_us: 2000
 
-  # Constraints that are satisfied but close to their feasibility boundary.
-  # Table II reports all hard constraints as admitted; no marginal constraint is explicitly reported.
-  marginal_constraints: []
+validity_and_runtime_status:
+  validity_interval:
+    valid_from_utc: "2026-06-09T00:00:00Z"
+    valid_until_utc: "2026-06-09T00:00:05Z"
+    limiting_validity_source: "classical_support_descriptor.state_and_validity.max_age_for_latency_and_jitter_state_s"
+  reuse_policy:
+    reusable_for_orchestration_without_reassessment: true
+    reuse_conditions:
+      - "descriptor_validity_intervals_not_expired"
+      - "telemetry_status_not_stale"
+      - "critical_margins_not_below_guard_threshold"
+      - "operator_policy_unchanged"
+  runtime_status_update_policy:
+    reconstruct_full_feasibility_assessment_during_runtime: false
+    allowed_runtime_updates:
+      - "validity_status"
+      - "margin_indicators"
+      - "stale_evidence_flags"
+      - "guard_threshold_flags"
+    reassessment_trigger: "marginal_stale_or_violated_admitted_evidence"
+  guard_thresholds:
+    critical_support_latency_slack_guard_us: 1000
+    packet_loss_slack_guard: 0.0005
+    synchronization_slack_guard_ns: 500
+    fidelity_margin_guard: 0.05
+    completion_time_slack_guard_us: 100000
 
-  # Main bottleneck identified by the feasibility evidence.
-  # The manuscript does not name a bottleneck explicitly. The closest reported admitted bound is the critical-support latency check.
-  bottleneck:
-    bottleneck_type: "classical_support_latency"
-    bottleneck_resource_ref: "classical_support_descriptor.state_and_validity.latency_state.support_latency_bound_us"
-    bottleneck_margin_ref: "derived_feasibility_evidence.classical_support_evidence.latency_margin_us"
+policy_compliance:
+  policy_ref: "pol-01"
+  hard_constraints_satisfied: true
+  bounded_adaptation_only: true
+  service_renegotiation_allowed_if_no_admissible_adaptation: true
+  termination_allowed_if_feasibility_cannot_be_restored: true
 
-  # Confidence assigned to the simulation-backed estimate.
-  confidence:
-    confidence_level: "simulation_backed_example"
-    confidence_basis: "simulation_backed_estimator_based_on_the_delayed_multi_qubit_teleportation_simulator_reported_in_reference_15"
-    confidence_refinement_source: "runtime_telemetry_or_additional_simulation_campaign"
-
-  # Explanation of the decision.
-  decision_reason: "All hard constraints reported in manuscript Table II are satisfied for the illustrative teleportation-stage admission assessment."
-
-# ---------------------------------------------------------------------------
-# 8. Validity and reuse policy
-# ---------------------------------------------------------------------------
-# Conditions under which this feasibility evidence may be reused.
-validity_and_reuse_policy:
-
-  # Validity mode for this feasibility evidence.
-  validity_mode: "bounded_by_most_restrictive_input_state"
-
-  # Time at which this feasibility evidence becomes valid.
-  valid_from_utc: "2026-06-09T00:00:00Z"
-
-  # Nominal validity duration.
-  validity_interval_s: 5
-
-  # Source of the validity interval.
-  validity_source_refs:
-    - "quantum_resource_descriptor.quality_and_validity.state_freshness_policy"
-    - "classical_support_descriptor.state_and_validity.state_freshness_policy"
-    - "service_deployment_descriptor.input_state_snapshot"
-
-  # Whether the evidence can be reused by admission control without recomputation.
-  reusable_for_admission_control: true
-
-  # Whether the evidence can be reused by service orchestration for runtime revalidation.
-  reusable_for_runtime_revalidation: true
-
-  # Events that invalidate this feasibility descriptor before the nominal interval expires.
-  invalidation_triggers:
-    - "service_descriptor_update"
-    - "service_deployment_descriptor_update"
-    - "quantum_resource_descriptor_update"
-    - "classical_support_descriptor_update"
-    - "service_workflow_descriptor_update"
-    - "link_quality_state_degradation"
-    - "memory_state_degradation"
-    - "qpu_availability_degradation"
-    - "latency_or_jitter_state_degradation"
-    - "packet_loss_state_degradation"
-    - "synchronization_state_degradation"
-    - "qpu_control_endpoint_degradation"
-    - "reservation_failure"
-
-# ---------------------------------------------------------------------------
-# 9. Runtime revalidation hooks
-# ---------------------------------------------------------------------------
-# Fields used by service orchestration to refresh feasibility during execution.
-runtime_revalidation:
-
-  # Whether this feasibility descriptor can be refreshed during service execution.
-  runtime_revalidation_supported: true
-
-  # Function responsible for triggering runtime revalidation.
-  refreshed_by:
-    - "service_orchestration"
-
-  # Margins monitored during runtime execution.
-  monitored_margins:
-    - "completion_time_margin_us"
-    - "completion_time_slack_us"
-    - "memory_coherence_margin_us"
-    - "memory_coherence_slack_us"
-    - "service_reliability_margin"
-    - "fidelity_margin"
-    - "classical_support_latency_margin_us"
-    - "classical_support_latency_slack_us"
-    - "synchronization_margin_ns"
-
-  # Runtime events that may trigger revalidation.
-  telemetry_triggers:
-    - "workflow_progress_update"
-    - "heralding_update"
-    - "retry_budget_update"
-    - "memory_occupation_update"
-    - "teleported_qubit_availability_update"
-    - "qpu_state_update"
-    - "classical_latency_update"
-    - "classical_jitter_update"
-    - "packet_loss_update"
-    - "synchronization_update"
-    - "qpu_control_endpoint_update"
-
-  # Guard threshold policy.
-  guard_threshold_policy:
-    margin_guard_mode: "operator_defined"
-    action_when_margin_below_guard: "trigger_bounded_adaptation_or_reassessment"
-
-# ---------------------------------------------------------------------------
-# 10. Ownership and update rules
-# ---------------------------------------------------------------------------
 ownership:
-
-  # Management function responsible for creating this feasibility descriptor.
   owner: "admission_control"
-
-  # Information sources used to populate this descriptor.
   data_sources:
     - "service_descriptor"
-    - "service_deployment_descriptor"
     - "quantum_resource_descriptor"
     - "classical_support_descriptor"
     - "service_workflow_descriptor"
-    - "simulation_backed_feasibility_estimator"
+    - "service_deployment_descriptor"
+    - "telemetry_calibrated_estimators"
     - "operator_policy_configuration"
 
-  update_semantics:
-
-    # Events that trigger feasibility descriptor creation or refresh.
-    triggers:
-      - "admission_assessment"
-      - "deployment_candidate_evaluation"
-      - "simulation_backed_feasibility_recalculation"
-      - "telemetry_refresh"
-      - "runtime_revalidation"
-      - "feasibility_reassessment_request"
-      - "candidate_replanning"
-
-    # Functions that may refresh this descriptor after the initial admission assessment.
-    refreshed_by:
-      - "admission_control"
-      - "service_orchestration"
-
-    # Descriptor sections that may be refreshed when new evidence is available.
-    refreshable_sections:
-      - "assessment_context"
-      - "evidence_input_refs"
-      - "estimation_method"
-      - "derived_feasibility_evidence"
-      - "evidence_dependency_summary"
-      - "constraint_evaluation_summary"
-      - "feasibility_state"
-      - "validity_and_reuse_policy"
-      - "runtime_revalidation"
-
-    # Descriptor sections writable by the owner.
-    writable_sections:
-      - "assessment_context"
-      - "estimation_method"
-      - "derived_feasibility_evidence"
-      - "evidence_dependency_summary"
-      - "constraint_evaluation_summary"
-      - "feasibility_state"
-      - "validity_and_reuse_policy"
-      - "runtime_revalidation"
+update_semantics:
+  creation_trigger: "admission_assessment"
+  runtime_update_triggers:
+    - "descriptor_validity_expiration"
+    - "quantum_resource_telemetry_update"
+    - "classical_support_telemetry_update"
+    - "workflow_progress_update"
+    - "guard_threshold_crossing"
+    - "operator_policy_update"
+  runtime_update_scope:
+    - "validity_and_runtime_status"
+    - "constraint_evaluation_summary.marginal_constraints"
+    - "constraint_evaluation_summary.violated_constraints"
+    - "derived_feasibility_evidence.*.status"
