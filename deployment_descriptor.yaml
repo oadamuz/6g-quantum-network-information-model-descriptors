@@ -1,95 +1,100 @@
-schema_version: "0.1-draft"
-descriptor_type: "service_deployment_descriptor"
-descriptor_id: "service_deployment_descriptor-01"
-deployment_id: "depl-01"
-service_ref: "svc-01"
-
+schema_version: 0.1-draft
+descriptor_type: service_deployment_descriptor
+descriptor_id: service_deployment_descriptor-01
+deployment_id: depl-01
+service_ref: svc-01
 input_descriptor_refs:
-  service_descriptor_ref: "service_descriptor-01"
-  quantum_resource_descriptor_ref: "quantum_resource_descriptor-01"
-  classical_support_descriptor_ref: "classical_support_descriptor-01"
-  workflow_descriptor_ref: "service_workflow_descriptor-01"
-
+  service_descriptor_ref: service_descriptor-01
+  quantum_resource_descriptor_ref: quantum_resource_descriptor-01
+  classical_support_descriptor_ref: classical_support_descriptor-01
+  workflow_descriptor_ref: service_workflow_descriptor-01
 candidate_status:
-  role: "baseline_deployment"
-  generation_stage: "pre_admission_planning"
+  role: baseline_deployment
+  generation_stage: pre_admission_planning
   evaluated_by_admission_control: true
   selected_for_orchestration: true
-
 quantum_resource_option:
-  option_id: "qres-option-01"
-  selected_quantum_path_id: "qpath-01"
+  option_id: qres-option-01
+  selected_quantum_path_id: qpath-01
+  path_model: single_quantum_repeater_path_with_qbs_access_swapping
+  number_of_quantum_repeaters: 1
   selected_quantum_nodes:
-    - "QUE-01"
-    - "QBS-01"
-    - "QR-01"
-    - "QPU-01"
+  - QUE-01
+  - QBS-01
+  - QR-01
+  - QPU-01
   elementary_links:
-    - "QUE-01_QBS-01"
-    - "QBS-01_QR-01"
-    - "QR-01_QPU-01"
+  - link_id: QUE-01_QBS-01
+    physical_medium: quantum_fso
+    role: source_access_link
+  - link_id: QBS-01_QR-01
+    physical_medium: quantum_fiber
+    role: source_side_infrastructure_link
+  - link_id: QR-01_QPU-01
+    physical_medium: quantum_fiber
+    role: destination_side_infrastructure_link
   required_end_to_end_bell_pairs: 4
   bell_pairs_per_input_qubit: 1
   generation_strategy:
-    strategy_id: "parallel_generation_baseline"
+    strategy_id: parallel_generation_baseline
     parallel_attempts_per_elementary_link: 4
     retry_budget_per_required_bell_pair: 3
   swapping_strategy:
     swapping_nodes:
-      - "QBS-01"
-      - "QR-01"
-    swapping_mode: "sequential_swapping_after_successful_elementary_generation"
-  teleportation_strategy: "delayed_multi_qubit_teleportation"
+    - QBS-01
+    - QR-01
+    swapping_mode: sequential_swapping_after_successful_elementary_generation
+  teleportation_strategy: delayed_multi_qubit_teleportation
   purification_or_distillation:
     allowed_by_capability: true
     selected_for_baseline: false
-    reason_not_selected: "baseline_uses_raw_swapped_end_to_end_bell_pairs"
+    reason_not_selected: baseline_uses_raw_swapped_end_to_end_bell_pairs
   quantum_memory_reservation:
     reservation_required: true
     reserved_nodes:
-      - node_id: "QUE-01"
-        reserved_memory_qubits: 4
-      - node_id: "QBS-01"
-        reserved_memory_qubits: 4
-      - node_id: "QR-01"
-        reserved_memory_qubits: 4
-      - node_id: "QPU-01"
-        reserved_memory_qubits: 4
+    - node_id: QUE-01
+      reserved_memory_qubits: 4
+    - node_id: QBS-01
+      reserved_memory_qubits: 4
+    - node_id: QR-01
+      reserved_memory_qubits: 4
+    - node_id: QPU-01
+      reserved_memory_qubits: 4
   remote_qpu_reservation:
-    qpu_id: "QPU-01"
+    qpu_id: QPU-01
     reserved_logical_qubits: 4
-    execution_gate: "all_requested_qubits_available_at_qpu"
-
+    execution_gate: all_requested_qubits_available_at_qpu
 classical_support_option:
-  option_id: "csup-option-01"
-  selected_support_path_id: "csup-path-01"
-  selected_support_profile: "critical_quantum_control"
-  selected_orchestration_profile: "orchestration_control"
-  selected_user_plane_anchor_ref: "upf-function-edge-01"
-  selected_edge_control_function_id: "edge-control-01"
-  selected_qpu_control_endpoint_id: "QPU-01"
+  option_id: csup-option-01
+  selected_support_path_id: csup-path-01
+  selected_support_path_model: CUE/QUE--6G-radio--QBS/gNB--UPF--edge-control-function--QPU-control-endpoint
+  selected_classical_access_endpoint_id: CUE-01
+  associated_quantum_endpoint_id: QUE-01
+  selected_support_profile: critical_quantum_control
+  selected_orchestration_profile: orchestration_control
+  selected_user_plane_anchor_ref: upf-function-edge-01
+  selected_edge_control_function_id: edge-control-01
+  selected_qpu_control_endpoint_id: QPU-01
   support_slice_or_qos:
     critical_support_slice_required: true
-    critical_support_slice_ref: "slice-critical-quantum-control-01"
-    critical_qos_flow_ref: "qos-flow-context-critical-01"
-    pcc_policy_ref: "pcc-policy-critical-quantum-control-01"
+    critical_support_slice_ref: slice-critical-quantum-control-01
+    critical_qos_flow_ref: qos-flow-context-critical-01
+    pcc_policy_ref: pcc-policy-critical-quantum-control-01
   synchronization_support:
-    synchronization_profile_ref: "network_time_synchronization"
+    synchronization_profile_ref: network_time_synchronization
     required_time_error_ns: 1000
   latency_bound_us: 25000
   packet_loss_bound_probability: 0.001
-
 workflow_variant:
-  variant_id: "wf-variant-01"
-  workflow_descriptor_ref: "service_workflow_descriptor-01"
-  selected_workflow_template: "remote_execution_via_multi_qubit_teleportation_template"
-  selected_execution_mode: "delayed_multi_qubit_teleportation"
-  retry_configuration_ref: "retry-policy-baseline-01"
+  variant_id: wf-variant-01
+  workflow_descriptor_ref: service_workflow_descriptor-01
+  selected_workflow_template: remote_execution_via_multi_qubit_teleportation_template
+  selected_execution_mode: delayed_multi_qubit_teleportation
+  retry_configuration_ref: retry-policy-baseline-01
   remote_operation_gating_enabled: true
-  selected_completion_condition: "teleportation_stage_completed"
-
+  selected_completion_condition: teleportation_stage_completed
 orchestration_plan:
-  plan_id: "orch-plan-01"
+  plan_id: orch-plan-01
   enforce_quantum_path_selection: true
   enforce_quantum_memory_reservation: true
   enforce_bell_pair_generation_scheduling: true
@@ -100,48 +105,44 @@ orchestration_plan:
   enforce_edge_control_placement: true
   enforce_workflow_order: true
   bounded_adaptation_actions_allowed:
-    - "quantum_path_reassignment"
-    - "classical_support_reconfiguration"
-    - "workflow_rescheduling"
-    - "optional_purification_activation"
-    - "edge_control_relocation"
-    - "service_objective_renegotiation"
-
+  - quantum_path_reassignment
+  - classical_support_reconfiguration
+  - workflow_rescheduling
+  - optional_purification_activation
+  - edge_control_relocation
+  - service_objective_renegotiation
 policy_constraints:
-  policy_ref: "pol-01"
+  policy_ref: pol-01
   hard_constraints:
-    - "minimum_reconstructed_qubit_fidelity"
-    - "teleportation_stage_completion_deadline"
-    - "teleportation_stage_service_reliability"
-    - "critical_classical_support_latency"
-    - "critical_classical_support_packet_loss"
-    - "synchronization_accuracy"
+  - minimum_reconstructed_qubit_fidelity
+  - teleportation_stage_completion_deadline
+  - teleportation_stage_service_reliability
+  - critical_classical_support_latency
+  - critical_classical_support_packet_loss
+  - synchronization_accuracy
   operator_constraints:
-    - "descriptor_validity_required_before_orchestration"
-    - "admitted_feasibility_evidence_required"
-    - "bounded_adaptation_only"
-
+  - descriptor_validity_required_before_orchestration
+  - admitted_feasibility_evidence_required
+  - bounded_adaptation_only
 feasibility_ref:
-  feasibility_descriptor_ref: "feasibility_descriptor-01"
-  assessment_status: "admit"
-  evidence_boundary: "selected_deployment_is_constrained_by_associated_feasibility_descriptor"
-
+  feasibility_descriptor_ref: feasibility_descriptor-01
+  assessment_status: admit
+  evidence_boundary: selected_deployment_is_constrained_by_associated_feasibility_descriptor
 ownership:
-  owner: "service_deployment_option_generation"
+  owner: service_deployment_option_generation
   data_sources:
-    - "service_descriptor"
-    - "quantum_resource_descriptor"
-    - "classical_support_descriptor"
-    - "service_workflow_descriptor"
-    - "operator_policy_configuration"
-
-update_semantics:
-  triggers:
-    - "candidate_generation"
-    - "admission_assessment_request"
-    - "bounded_adaptation_candidate_generation"
-  editable_sections:
-    - "quantum_resource_option"
-    - "classical_support_option"
-    - "workflow_variant"
-    - "orchestration_plan"
+  - service_descriptor
+  - quantum_resource_descriptor
+  - classical_support_descriptor
+  - service_workflow_descriptor
+  - operator_policy_configuration
+  update_semantics:
+    triggers:
+    - candidate_generation
+    - admission_assessment_request
+    - bounded_adaptation_candidate_generation
+    editable_sections:
+    - quantum_resource_option
+    - classical_support_option
+    - workflow_variant
+    - orchestration_plan

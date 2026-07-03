@@ -1,267 +1,241 @@
-schema_version: "0.1-draft"
-descriptor_type: "feasibility_descriptor"
-descriptor_id: "feasibility_descriptor-01"
-feasibility_id: "feas-01"
-service_ref: "svc-01"
-deployment_ref: "depl-01"
-
+schema_version: 0.1-draft
+descriptor_type: feasibility_descriptor
+descriptor_id: feasibility_descriptor-01
+feasibility_id: feas-01
+service_ref: svc-01
+deployment_ref: depl-01
 assessment_context:
-  evaluated_deployment_descriptor_ref: "service_deployment_descriptor-01"
-  assessment_time_utc: "2026-06-09T00:00:00Z"
-  assessment_stage: "pre_admission"
-  assessment_scope: "teleportation_stage_enabling_remote_qpu_execution"
+  evaluated_deployment_descriptor_ref: service_deployment_descriptor-01
+  assessment_time_utc: '2026-06-09T00:00:00Z'
+  assessment_stage: pre_admission
+  assessment_scope: teleportation_stage_enabling_remote_qpu_execution
   evidence_input_refs:
-    service_descriptor_ref: "service_descriptor-01"
-    quantum_resource_descriptor_ref: "quantum_resource_descriptor-01"
-    classical_support_descriptor_ref: "classical_support_descriptor-01"
-    workflow_descriptor_ref: "service_workflow_descriptor-01"
+    service_descriptor_ref: service_descriptor-01
+    quantum_resource_descriptor_ref: quantum_resource_descriptor-01
+    classical_support_descriptor_ref: classical_support_descriptor-01
+    workflow_descriptor_ref: service_workflow_descriptor-01
   snapshot_policy:
     require_consistent_descriptor_validity: true
     require_refresh_before_admission: true
-
 estimation_methods:
   primary_estimator:
-    estimator_type: "simulation_backed"
-    estimator_ref: "delayed_multi_qubit_teleportation_simulator_v0.1"
-    source_publication_ref: "AdamuzHinojosa2026QubitTeleportation"
-    description: >-
-      Estimator accounts for Bell-pair generation, storage-time evolution,
-      memory-induced fidelity degradation, and selected classical-support
-      constraints.
+    estimator_type: simulation_backed
+    estimator_ref: delayed_multi_qubit_teleportation_simulator_v0.1
+    source_publication_ref: AdamuzHinojosa2026QubitTeleportation
+    description: Estimator accounts for Bell-pair generation, storage-time evolution, memory-induced fidelity degradation, and selected classical-support constraints.
   additional_methods:
-    - "telemetry_calibrated_latency_model"
-    - "analytical_descriptor_consistency_checks"
+  - telemetry_calibrated_latency_model
+  - analytical_descriptor_consistency_checks
   confidence_model:
-    confidence_level: "illustrative_simulation_backed"
+    confidence_level: illustrative_simulation_backed
     confidence_score: 0.95
-    confidence_interpretation: >-
-      Confidence value is illustrative and denotes that the example is supported
-      by simulation-backed feasibility accounting, not by a general deployment
-      validation campaign.
-
+    confidence_interpretation: Confidence value is illustrative and denotes that the example is supported by simulation-backed feasibility accounting, not by a general deployment validation campaign.
 constraint_targets:
   reconstructed_qubit_fidelity:
     target: 0.85
-    comparison: ">="
+    comparison: '>='
   teleportation_stage_completion_time_us:
     target: 1000000
-    comparison: "<="
+    comparison: <=
   link_level_bell_pair_generation_success:
     operational_bound: 0.95
-    comparison: ">="
+    comparison: '>='
   teleportation_stage_service_reliability:
     target: 0.95
-    comparison: ">="
+    comparison: '>='
   memory_occupation_time_us:
     bound: 10000000
-    comparison: "<="
+    comparison: <=
   critical_support_latency_us:
     bound: 25000
-    statistic_used: "p95_one_way_latency"
-    comparison: "<="
+    statistic_used: p95_one_way_latency
+    comparison: <=
   packet_loss_probability:
     bound: 0.001
-    comparison: "<="
+    comparison: <=
   synchronization_error_ns:
     bound: 1000
-    comparison: "<="
-
-# Derived evidence follows the margin convention used in the manuscript table:
-# for <= constraints, a negative margin indicates the estimated value is below
-# the bound; for >= constraints, a positive margin indicates that the estimated
-# value is above the target.
+    comparison: <=
 derived_feasibility_evidence:
   reconstructed_qubit_fidelity:
-    evidence_item: "reconstructed_qubit_fidelity"
+    evidence_item: reconstructed_qubit_fidelity
     main_descriptor_inputs:
-      - "service_descriptor.objective_profile"
-      - "quantum_resource_descriptor.quality_and_validity.link_quality_state"
-      - "quantum_resource_descriptor.quality_and_validity.memory_state"
-      - "deployment_descriptor.quantum_resource_option.swapping_strategy"
-      - "workflow_descriptor.workflow_steps"
+    - service_descriptor.objective_profile
+    - quantum_resource_descriptor.quality_and_validity.link_quality_state
+    - quantum_resource_descriptor.quality_and_validity.memory_state
+    - deployment_descriptor.quantum_resource_option.swapping_strategy
+    - workflow_descriptor.workflow_steps
     estimated_value: 0.963
     target_or_bound: 0.85
     margin: 0.113
-    status: "admit"
-
+    status: admit
   teleportation_stage_completion_time:
-    evidence_item: "teleportation_stage_completion_time"
+    evidence_item: teleportation_stage_completion_time
     main_descriptor_inputs:
-      - "workflow_descriptor.dependency_graph"
-      - "workflow_descriptor.timing_and_retry_policy"
-      - "deployment_descriptor.quantum_resource_option.generation_strategy"
-      - "classical_support_descriptor.state_and_validity.latency_state"
+    - workflow_descriptor.dependency_graph
+    - workflow_descriptor.timing_and_retry_policy
+    - deployment_descriptor.quantum_resource_option.generation_strategy
+    - classical_support_descriptor.state_and_validity.latency_state
     estimated_value_us: 368115
     estimated_value_ms: 368.115
     target_or_bound_us: 1000000
+    target_or_bound_s: 1
     margin_us: -631885
     margin_ms: -631.885
     slack_us: 631885
-    status: "admit"
-
+    status: admit
   link_level_bell_pair_generation_success:
-    evidence_item: "link_level_bell_pair_generation_success"
+    evidence_item: link_level_bell_pair_generation_success
     main_descriptor_inputs:
-      - "quantum_resource_descriptor.quality_and_validity.link_quality_state"
-      - "deployment_descriptor.quantum_resource_option.elementary_links"
-      - "deployment_descriptor.quantum_resource_option.generation_strategy"
+    - quantum_resource_descriptor.quality_and_validity.link_quality_state
+    - deployment_descriptor.quantum_resource_option.elementary_links
+    - deployment_descriptor.quantum_resource_option.generation_strategy
     estimated_value: 0.9999
-    estimated_value_relation: ">"
+    estimated_value_relation: '>'
     target_or_bound: 0.95
     margin: 0.0499
-    margin_relation: ">"
-    status: "admit"
-
+    margin_relation: '>'
+    status: admit
   teleportation_stage_service_reliability:
-    evidence_item: "teleportation_stage_service_reliability"
+    evidence_item: teleportation_stage_service_reliability
     main_descriptor_inputs:
-      - "derived_feasibility_evidence.link_level_bell_pair_generation_success"
-      - "derived_feasibility_evidence.reconstructed_qubit_fidelity"
-      - "derived_feasibility_evidence.teleportation_stage_completion_time"
-      - "constraint_targets.packet_loss_probability"
-      - "service_descriptor.objective_profile.service_reliability_target"
+    - derived_feasibility_evidence.link_level_bell_pair_generation_success
+    - derived_feasibility_evidence.reconstructed_qubit_fidelity
+    - derived_feasibility_evidence.teleportation_stage_completion_time
+    - constraint_targets.packet_loss_probability
+    - service_descriptor.objective_profile.service_reliability_target
     estimated_value: 0.9999
-    estimated_value_relation: ">"
+    estimated_value_relation: '>'
     target_or_bound: 0.95
     margin: 0.0499
-    margin_relation: ">"
-    status: "admit"
-
+    margin_relation: '>'
+    status: admit
   memory_occupation_time:
-    evidence_item: "memory_occupation_time"
+    evidence_item: memory_occupation_time
     main_descriptor_inputs:
-      - "workflow_descriptor.quantum_resource_occupation"
-      - "quantum_resource_descriptor.quality_and_validity.memory_state"
+    - workflow_descriptor.quantum_resource_occupation
+    - quantum_resource_descriptor.quality_and_validity.memory_state
     estimated_value_us: 322100
-    estimated_value_ms: 322.100
+    estimated_value_ms: 322.1
     target_or_bound_us: 10000000
     target_or_bound_s: 10
     margin_us: -9677900
-    margin_ms: -9677.900
+    margin_ms: -9677.9
     slack_us: 9677900
-    status: "admit"
-
+    status: admit
   critical_support_latency:
-    evidence_item: "critical_support_latency"
+    evidence_item: critical_support_latency
     main_descriptor_inputs:
-      - "deployment_descriptor.classical_support_option.selected_support_profile"
-      - "classical_support_descriptor.state_and_validity.latency_state.estimated_p95_one_way_latency_us"
+    - deployment_descriptor.classical_support_option.selected_support_profile
+    - classical_support_descriptor.state_and_validity.latency_state.estimated_p95_one_way_latency_us
     estimated_value_us: 23000
-    estimated_value_ms: 23.000
-    statistic_used: "p95_one_way_latency"
+    estimated_value_ms: 23.0
+    statistic_used: p95_one_way_latency
     target_or_bound_us: 25000
-    target_or_bound_ms: 25.000
+    target_or_bound_ms: 25.0
     margin_us: -2000
-    margin_ms: -2.000
+    margin_ms: -2.0
     slack_us: 2000
-    status: "admit"
-
+    status: admit
   packet_loss:
-    evidence_item: "packet_loss"
+    evidence_item: packet_loss
     main_descriptor_inputs:
-      - "classical_support_descriptor.state_and_validity.packet_loss_state"
-      - "deployment_descriptor.classical_support_option.selected_support_profile"
-    estimated_value: 0.00004
+    - classical_support_descriptor.state_and_validity.packet_loss_state
+    - deployment_descriptor.classical_support_option.selected_support_profile
+    estimated_value: 4.0e-05
     target_or_bound: 0.001
     margin: -0.00096
     slack: 0.00096
-    status: "admit"
-
+    status: admit
   synchronization:
-    evidence_item: "synchronization"
+    evidence_item: synchronization
     main_descriptor_inputs:
-      - "classical_support_descriptor.state_and_validity.synchronization_state"
-      - "deployment_descriptor.classical_support_option.synchronization_support"
+    - classical_support_descriptor.state_and_validity.synchronization_state
+    - deployment_descriptor.classical_support_option.synchronization_support
     estimated_value_ns: 100
     target_or_bound_ns: 1000
     margin_ns: -900
     slack_ns: 900
-    status: "admit"
-
+    status: admit
   admission_decision:
-    evidence_item: "admission_decision"
+    evidence_item: admission_decision
     main_descriptor_inputs:
-      - "constraint_evaluation_summary"
-      - "bottleneck_quantum_resource"
-      - "validity_interval"
-      - "confidence_level"
-      - "policy_compliance"
-    estimated_value: "admit"
-    target_or_bound: "all_hard_constraints_satisfied"
-    status: "admit"
-
+    - constraint_evaluation_summary
+    - bottleneck_quantum_resource
+    - validity_interval
+    - confidence_level
+    - policy_compliance
+    estimated_value: admit
+    target_or_bound: all_hard_constraints_satisfied
+    status: admit
 constraint_evaluation_summary:
-  overall_status: "admit"
+  overall_status: admit
   violated_constraints: []
   marginal_constraints:
-    - constraint_id: "critical_support_latency"
-      reason: "smallest absolute latency slack among the explicit critical-support constraints"
-      slack_us: 2000
+  - constraint_id: critical_support_latency
+    reason: smallest absolute latency slack among the explicit critical-support constraints
+    slack_us: 2000
   bottleneck_quantum_resource:
-    resource_type: "quantum_memory_coherence_time"
-    status: "not_bottleneck_for_baseline"
+    resource_type: quantum_memory_coherence_time
+    status: not_bottleneck_for_baseline
     slack_us: 9677900
   bottleneck_classical_support_constraint:
-    constraint_type: "critical_support_latency"
-    status: "admissible_with_margin"
+    constraint_type: critical_support_latency
+    status: admissible_with_margin
     slack_us: 2000
-
 validity_and_runtime_status:
   validity_interval:
-    valid_from_utc: "2026-06-09T00:00:00Z"
-    valid_until_utc: "2026-06-09T00:00:05Z"
-    limiting_validity_source: "classical_support_descriptor.state_and_validity.max_age_for_latency_and_jitter_state_s"
+    valid_from_utc: '2026-06-09T00:00:00Z'
+    valid_until_utc: '2026-06-09T00:00:05Z'
+    limiting_validity_source: classical_support_descriptor.state_and_validity.max_age_for_latency_and_jitter_state_s
   reuse_policy:
     reusable_for_orchestration_without_reassessment: true
     reuse_conditions:
-      - "descriptor_validity_intervals_not_expired"
-      - "telemetry_status_not_stale"
-      - "critical_margins_not_below_guard_threshold"
-      - "operator_policy_unchanged"
+    - descriptor_validity_intervals_not_expired
+    - telemetry_status_not_stale
+    - critical_margins_not_below_guard_threshold
+    - operator_policy_unchanged
   runtime_status_update_policy:
     reconstruct_full_feasibility_assessment_during_runtime: false
     allowed_runtime_updates:
-      - "validity_status"
-      - "margin_indicators"
-      - "stale_evidence_flags"
-      - "guard_threshold_flags"
-    reassessment_trigger: "marginal_stale_or_violated_admitted_evidence"
+    - validity_status
+    - margin_indicators
+    - stale_evidence_flags
+    - guard_threshold_flags
+    reassessment_trigger: marginal_stale_or_violated_admitted_evidence
   guard_thresholds:
     critical_support_latency_slack_guard_us: 1000
     packet_loss_slack_guard: 0.0005
     synchronization_slack_guard_ns: 500
     fidelity_margin_guard: 0.05
     completion_time_slack_guard_us: 100000
-
 policy_compliance:
-  policy_ref: "pol-01"
+  policy_ref: pol-01
   hard_constraints_satisfied: true
   bounded_adaptation_only: true
   service_renegotiation_allowed_if_no_admissible_adaptation: true
   termination_allowed_if_feasibility_cannot_be_restored: true
-
 ownership:
-  owner: "admission_control"
+  owner: admission_control
   data_sources:
-    - "service_descriptor"
-    - "quantum_resource_descriptor"
-    - "classical_support_descriptor"
-    - "service_workflow_descriptor"
-    - "service_deployment_descriptor"
-    - "telemetry_calibrated_estimators"
-    - "operator_policy_configuration"
-
-update_semantics:
-  creation_trigger: "admission_assessment"
-  runtime_update_triggers:
-    - "descriptor_validity_expiration"
-    - "quantum_resource_telemetry_update"
-    - "classical_support_telemetry_update"
-    - "workflow_progress_update"
-    - "guard_threshold_crossing"
-    - "operator_policy_update"
-  runtime_update_scope:
-    - "validity_and_runtime_status"
-    - "constraint_evaluation_summary.marginal_constraints"
-    - "constraint_evaluation_summary.violated_constraints"
-    - "derived_feasibility_evidence.*.status"
+  - service_descriptor
+  - quantum_resource_descriptor
+  - classical_support_descriptor
+  - service_workflow_descriptor
+  - service_deployment_descriptor
+  - telemetry_calibrated_estimators
+  - operator_policy_configuration
+  update_semantics:
+    creation_trigger: admission_assessment
+    runtime_update_triggers:
+    - descriptor_validity_expiration
+    - quantum_resource_telemetry_update
+    - classical_support_telemetry_update
+    - workflow_progress_update
+    - guard_threshold_crossing
+    - operator_policy_update
+    runtime_update_scope:
+    - validity_and_runtime_status
+    - constraint_evaluation_summary.marginal_constraints
+    - constraint_evaluation_summary.violated_constraints
+    - derived_feasibility_evidence.*.status

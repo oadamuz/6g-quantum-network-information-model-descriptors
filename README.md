@@ -2,16 +2,24 @@
 
 This repository contains illustrative YAML descriptor instances for managing quantum services over hybrid 6G--quantum infrastructures. The examples follow the descriptor-based information model proposed in the manuscript:
 
-> Information Model and Management Architecture for Quantum Services over Hybrid 6G--Quantum Infrastructures  
-> Oscar Adamuz-Hinojosa, Jonathan Prados-Garzon, Natalia Chinchilla-Romero, and Juan M. Lopez-Soler
+> **Information Model and Management Architecture for Quantum Services over Hybrid 6G--Quantum Infrastructures**  
+> Oscar Adamuz-Hinojosa, Jonathan Prados-Garzon, Natalia Chinchilla-Romero, Felix Delgado-Ferro, and Juan M. Lopez-Soler
 
-The repository is intended to provide machine-readable examples of the descriptor instances discussed in the paper. The descriptors are aligned with the illustrative remote quantum-execution service and feasibility-accounting example presented in Section IV and Table II of the manuscript.
+The repository provides machine-readable examples of the descriptor instances discussed in the paper. The descriptors are aligned with the illustrative remote quantum-execution service and feasibility-accounting example presented in Section IV and Table II of the manuscript.
 
 ## Scope
 
 The descriptors describe a remote quantum-execution service in which an authorized quantum-enabled user equipment (QUE) transfers four input qubits to a remote quantum processing unit (QPU) through delayed multi-qubit teleportation. The remote-QPU operation is treated as a gated downstream step: it can start only after all requested qubits have been reconstructed at the remote QPU.
 
 The numerical feasibility evidence focuses on the teleportation stage that enables the downstream remote-QPU operation. These values are illustrative and simulation-backed; they should not be interpreted as a general validation claim for all hybrid 6G--quantum deployments.
+
+The example explicitly distinguishes the quantum and classical parts of the infrastructure:
+
+- `quantum_fso` is used for the quantum access link between `QUE-01` and `QBS-01`.
+- `quantum_fiber` is used for the quantum infrastructure links from `QBS-01` to `QR-01` and from `QR-01` to `QPU-01`.
+- `6g_radio_link` is used for the classical wireless access segment.
+- `classical_wired_link` denotes the classical transport segment; depending on deployment, this may be fiber, Ethernet, or another classical wired technology. It is not intended to denote quantum-capable fiber.
+- `QUE-01` and `CUE-01` are represented as logical quantum and classical interfaces of the same endpoint.
 
 ## Repository contents
 
@@ -32,15 +40,13 @@ The numerical feasibility evidence focuses on the teleportation stage that enabl
 | File | Descriptor type | Purpose |
 |---|---|---|
 | `service_descriptor.yaml` | `service_descriptor` | Captures the tenant-facing quantum-service request, including the operation type, endpoints, service objectives, quantum-resource demand, workflow reference, and policy constraints. |
-| `quantum_resource_descriptor.yaml` | `quantum_resource_descriptor` | Captures the quantum-resource context used by planning and admission control, including the selected quantum path, memory state, Bell-pair generation capabilities, swapping support, QPU availability, and validity information. |
-| `classical_support_descriptor.yaml` | `classical_support_descriptor` | Captures the 6G/classical-support context, including the selected support path, slice/QoS treatment, latency, jitter, packet loss, synchronization, edge-control reachability, telemetry, and validity information. |
+| `quantum_resource_descriptor.yaml` | `quantum_resource_descriptor` | Captures the quantum-resource context used by planning and admission control, including the selected quantum path, FSO/fiber quantum-link media, memory state, Bell-pair generation capabilities, swapping support, QPU availability, and validity information. |
+| `classical_support_descriptor.yaml` | `classical_support_descriptor` | Captures the 6G/classical-support context, including the selected support path, CUE/QUE interface mapping, slice/QoS treatment, latency, jitter, packet loss, synchronization, edge-control reachability, telemetry, and validity information. |
 | `workflow_descriptor.yaml` | `service_workflow_descriptor` | Captures the ordered quantum--classical workflow, including Bell-pair generation, heralding, swapping, measurement-result exchange, Pauli correction, retry handling, and remote-QPU execution gating. |
 | `deployment_descriptor.yaml` | `service_deployment_descriptor` | Captures one deployable realization of the requested service by binding the service descriptor, the quantum-resource option, the 6G/classical-support option, and the workflow variant. |
 | `feasibility_descriptor.yaml` | `feasibility_descriptor` | Captures the explicit feasibility assessment record associated with the evaluated deployment alternative, including fidelity, timing, reliability, classical-support margins, validity, confidence, and admission status. |
 
 ## Example service
-
-The example models the following service request:
 
 | Attribute | Value |
 |---|---|
@@ -52,6 +58,11 @@ The example models the following service request:
 | Teleportation-stage deadline | 1 s |
 | Teleportation-stage reliability target | 0.95 |
 | Classical-support priority | High priority |
+| Quantum path model | Single-QR path with QBS access swapping |
+| Quantum access medium | Quantum FSO |
+| Quantum infrastructure medium | Quantum fiber |
+| Classical access medium | 6G radio link |
+| Classical transport medium | Classical wired link |
 | Remote execution condition | Launch only after all requested qubits are available at the QPU |
 
 ## Feasibility evidence represented in the example
@@ -162,7 +173,7 @@ If you use these descriptor examples, please cite the associated manuscript:
 
 ```bibtex
 @article{AdamuzHinojosa2026QuantumServiceDescriptors,
-  author  = {Oscar Adamuz-Hinojosa and Jonathan Prados-Garzon and Natalia Chinchilla-Romero and Juan M. Lopez-Soler},
+  author  = {Oscar Adamuz-Hinojosa and Jonathan Prados-Garzon and Natalia Chinchilla-Romero and Felix Delgado-Ferro and Juan M. Lopez-Soler},
   title   = {{Information Model and Management Architecture for Quantum Services over Hybrid 6G--Quantum Infrastructures}},
   journal = {Submitted manuscript},
   year    = {2026}

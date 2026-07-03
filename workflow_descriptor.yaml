@@ -1,226 +1,184 @@
-schema_version: "0.1-draft"
-descriptor_type: "service_workflow_descriptor"
-descriptor_id: "service_workflow_descriptor-01"
-service_ref: "svc-01"
-workflow_template_ref: "remote_execution_via_multi_qubit_teleportation_template"
-workflow_instance_id: "wf-01"
-
+schema_version: 0.1-draft
+descriptor_type: service_workflow_descriptor
+descriptor_id: service_workflow_descriptor-01
+service_ref: svc-01
+workflow_template_ref: remote_execution_via_multi_qubit_teleportation_template
+workflow_instance_id: wf-01
 workflow_summary:
-  service_type: "remote_quantum_execution"
-  quantum_transfer_mechanism: "delayed_multi_qubit_teleportation"
-  input_qubits_to_teleport_ref: "service_descriptor.operation_profile.resource_demand.input_qubits_to_teleport"
-  required_bell_pairs_ref: "service_descriptor.operation_profile.resource_demand.bell_pairs"
-  remote_execution_gate: "all_requested_qubits_available_at_qpu"
-  description: >-
-    Ordered execution workflow for transferring four input qubits from QUE-01 to
-    QPU-01 through delayed multi-qubit teleportation and launching the remote
-    QPU operation only after all requested qubits are available at the QPU.
-
+  service_type: remote_quantum_execution
+  quantum_transfer_mechanism: delayed_multi_qubit_teleportation
+  input_qubits_to_teleport_ref: service_descriptor.resource_demand.input_qubits_to_teleport
+  required_bell_pairs_ref: service_descriptor.resource_demand.bell_pairs
+  remote_execution_gate: all_requested_qubits_available_at_qpu
+  description: Ordered execution workflow for transferring four input qubits from QUE-01 to QPU-01 through delayed multi-qubit teleportation and launching the remote-QPU operation only after all requested qubits are available at the QPU.
 participants:
   quantum_nodes:
-    - "QUE-01"
-    - "QBS-01"
-    - "QR-01"
-    - "QPU-01"
+  - QUE-01
+  - QBS-01
+  - QR-01
+  - QPU-01
   classical_support_entities:
-    - "edge-control-01"
-    - "UPF-edge-01"
+  - CUE-01
+  - edge-control-01
+  - UPF-edge-01
   logical_roles:
-    input_qubit_source: "QUE-01"
+    input_qubit_source: QUE-01
+    classical_support_interface: CUE-01
     bell_pair_generation_nodes:
-      - "QUE-01"
-      - "QBS-01"
-      - "QR-01"
-      - "QPU-01"
+    - QUE-01
+    - QBS-01
+    - QR-01
+    - QPU-01
     swapping_nodes:
-      - "QBS-01"
-      - "QR-01"
-    teleportation_measurement_node: "QUE-01"
-    correction_node: "QPU-01"
-    remote_execution_node: "QPU-01"
-
+    - QBS-01
+    - QR-01
+    teleportation_measurement_node: QUE-01
+    correction_node: QPU-01
+    remote_execution_node: QPU-01
 workflow_steps:
-  - step_id: "wf-step-01"
-    name: "service_context_initialization"
-    step_type: "classical_message_exchange"
-    message_class: "orchestration_commands"
-    description: "Initialize service context, descriptor references, and admission assumptions."
-    depends_on: []
-    produces:
-      - "initialized_workflow_context"
-
-  - step_id: "wf-step-02"
-    name: "parallel_elementary_bell_pair_generation"
-    step_type: "quantum_operation"
-    operation: "entanglement_generation"
-    description: "Generate elementary Bell pairs over the selected quantum links."
-    quantum_links:
-      - "QUE-01_QBS-01"
-      - "QBS-01_QR-01"
-      - "QR-01_QPU-01"
-    depends_on:
-      - "wf-step-01"
-    produces:
-      - "elementary_bell_pair_generation_attempts"
-
-  - step_id: "wf-step-03"
-    name: "heralding_and_generation_acknowledgment"
-    step_type: "classical_message_exchange"
-    message_class: "heralding"
-    description: "Report elementary Bell-pair generation outcomes through the classical-support network."
-    depends_on:
-      - "wf-step-02"
-    produces:
-      - "generation_success_information"
-
-  - step_id: "wf-step-04"
-    name: "entanglement_swapping"
-    step_type: "quantum_operation"
-    operation: "entanglement_swapping"
-    description: "Perform swapping at QBS-01 and QR-01 to create end-to-end Bell pairs."
-    depends_on:
-      - "wf-step-03"
-    produces:
-      - "end_to_end_bell_pair_candidates"
-
-  - step_id: "wf-step-05"
-    name: "swapping_outcome_exchange"
-    step_type: "classical_message_exchange"
-    message_class: "measurement_outcomes"
-    description: "Exchange swapping outcomes and update the end-to-end Bell-pair state."
-    depends_on:
-      - "wf-step-04"
-    produces:
-      - "end_to_end_bell_pair_state_information"
-
-  - step_id: "wf-step-06"
-    name: "end_to_end_bell_pair_set_completion"
-    step_type: "workflow_gate"
-    gate_condition: "four_end_to_end_bell_pairs_available"
-    depends_on:
-      - "wf-step-05"
-    produces:
-      - "complete_bell_pair_set"
-
-  - step_id: "wf-step-07"
-    name: "delayed_multi_qubit_teleportation_measurements"
-    step_type: "quantum_operation"
-    operation: "bell_state_measurement"
-    description: "Perform Bell-state measurements between input qubits and local Bell-pair halves at QUE-01."
-    depends_on:
-      - "wf-step-06"
-    produces:
-      - "teleportation_measurement_outcomes"
-
-  - step_id: "wf-step-08"
-    name: "measurement_result_exchange_and_feed_forward"
-    step_type: "classical_message_exchange"
-    message_class: "feed_forward"
-    description: "Deliver teleportation measurement outcomes and feed-forward information to QPU-01."
-    depends_on:
-      - "wf-step-07"
-    produces:
-      - "correction_information_at_qpu"
-
-  - step_id: "wf-step-09"
-    name: "pauli_correction_or_frame_update"
-    step_type: "quantum_operation"
-    operation: "pauli_correction_or_frame_update"
-    description: "Apply Pauli corrections or update the Pauli frame at QPU-01."
-    depends_on:
-      - "wf-step-08"
-    produces:
-      - "reconstructed_qubits_at_qpu"
-
-  - step_id: "wf-step-10"
-    name: "remote_qpu_execution_gate"
-    step_type: "workflow_gate"
-    gate_condition: "all_requested_qubits_available_at_qpu"
-    depends_on:
-      - "wf-step-09"
-    produces:
-      - "remote_qpu_operation_can_start"
-
-  - step_id: "wf-step-11"
-    name: "completion_acknowledgment"
-    step_type: "classical_message_exchange"
-    message_class: "acknowledgments"
-    description: "Acknowledge teleportation-stage completion and remote-QPU execution readiness."
-    depends_on:
-      - "wf-step-10"
-    produces:
-      - "teleportation_stage_completed"
-
+- step_id: wf-step-01
+  name: service_context_initialization
+  step_type: classical_message_exchange
+  message_class: orchestration_commands
+  description: Initialize service context, descriptor references, and admission assumptions.
+  depends_on: []
+  produces:
+  - initialized_workflow_context
+- step_id: wf-step-02
+  name: parallel_elementary_bell_pair_generation
+  step_type: quantum_operation
+  operation: entanglement_generation
+  description: Generate elementary Bell pairs over the selected quantum links.
+  quantum_links:
+  - QUE-01_QBS-01
+  - QBS-01_QR-01
+  - QR-01_QPU-01
+  depends_on:
+  - wf-step-01
+  produces:
+  - elementary_bell_pair_generation_attempts
+- step_id: wf-step-03
+  name: heralding_and_generation_acknowledgment
+  step_type: classical_message_exchange
+  message_class: heralding
+  description: Report elementary Bell-pair generation outcomes through the classical-support network.
+  depends_on:
+  - wf-step-02
+  produces:
+  - generation_success_information
+- step_id: wf-step-04
+  name: entanglement_swapping
+  step_type: quantum_operation
+  operation: entanglement_swapping
+  description: Perform swapping at QBS-01 and QR-01 to create end-to-end Bell pairs.
+  depends_on:
+  - wf-step-03
+  produces:
+  - end_to_end_bell_pair_candidates
+- step_id: wf-step-05
+  name: swapping_outcome_exchange
+  step_type: classical_message_exchange
+  message_class: measurement_outcomes
+  description: Exchange swapping outcomes and update the end-to-end Bell-pair state.
+  depends_on:
+  - wf-step-04
+  produces:
+  - end_to_end_bell_pair_state_information
+- step_id: wf-step-06
+  name: end_to_end_bell_pair_set_completion
+  step_type: workflow_gate
+  gate_condition: four_end_to_end_bell_pairs_available
+  description: Check that the four required end-to-end Bell pairs are available.
+  depends_on:
+  - wf-step-05
+  produces:
+  - complete_bell_pair_set
+- step_id: wf-step-07
+  name: delayed_multi_qubit_teleportation_measurements
+  step_type: quantum_operation
+  operation: bell_state_measurement
+  description: Perform Bell-state measurements between input qubits and local Bell-pair halves at QUE-01.
+  depends_on:
+  - wf-step-06
+  produces:
+  - teleportation_measurement_outcomes
+- step_id: wf-step-08
+  name: measurement_result_exchange_and_feed_forward
+  step_type: classical_message_exchange
+  message_class: feed_forward
+  description: Deliver teleportation measurement outcomes and feed-forward information to QPU-01.
+  depends_on:
+  - wf-step-07
+  produces:
+  - correction_information_at_qpu
+- step_id: wf-step-09
+  name: pauli_correction_or_frame_update
+  step_type: quantum_operation
+  operation: pauli_correction_or_frame_update
+  description: Apply Pauli corrections or update the Pauli frame at QPU-01.
+  depends_on:
+  - wf-step-08
+  produces:
+  - reconstructed_qubits_at_qpu
+- step_id: wf-step-10
+  name: remote_qpu_execution_gate
+  step_type: workflow_gate
+  gate_condition: all_requested_qubits_available_at_qpu
+  description: Gate the downstream remote-QPU operation until all requested qubits are available at QPU-01.
+  depends_on:
+  - wf-step-09
+  produces:
+  - remote_qpu_operation_can_start
+- step_id: wf-step-11
+  name: completion_acknowledgment
+  step_type: classical_message_exchange
+  message_class: acknowledgments
+  description: Acknowledge teleportation-stage completion and remote-QPU execution readiness.
+  depends_on:
+  - wf-step-10
+  produces:
+  - teleportation_stage_completed
 dependency_graph:
-  nodes_ref: "workflow_steps"
+  nodes_ref: workflow_steps
   edges:
-    - from: "wf-step-01"
-      to: "wf-step-02"
-    - from: "wf-step-02"
-      to: "wf-step-03"
-    - from: "wf-step-03"
-      to: "wf-step-04"
-    - from: "wf-step-04"
-      to: "wf-step-05"
-    - from: "wf-step-05"
-      to: "wf-step-06"
-    - from: "wf-step-06"
-      to: "wf-step-07"
-    - from: "wf-step-07"
-      to: "wf-step-08"
-    - from: "wf-step-08"
-      to: "wf-step-09"
-    - from: "wf-step-09"
-      to: "wf-step-10"
-    - from: "wf-step-10"
-      to: "wf-step-11"
-
+  - from: wf-step-01
+    to: wf-step-02
+  - from: wf-step-02
+    to: wf-step-03
+  - from: wf-step-03
+    to: wf-step-04
+  - from: wf-step-04
+    to: wf-step-05
+  - from: wf-step-05
+    to: wf-step-06
+  - from: wf-step-06
+    to: wf-step-07
+  - from: wf-step-07
+    to: wf-step-08
+  - from: wf-step-08
+    to: wf-step-09
+  - from: wf-step-09
+    to: wf-step-10
+  - from: wf-step-10
+    to: wf-step-11
 timing_and_retry_policy:
-  completion_deadline_us_ref: "service_descriptor.objective_profile.completion_deadline_us"
+  completion_deadline_us_ref: service_descriptor.objective_profile.completion_deadline_us
   teleportation_stage_deadline_us: 1000000
-  retry_policy_id: "retry-policy-baseline-01"
+  retry_policy_id: retry-policy-baseline-01
   max_generation_retries_per_required_bell_pair: 3
   retry_applies_to:
-    - "parallel_elementary_bell_pair_generation"
+  - parallel_elementary_bell_pair_generation
   retry_not_allowed_after:
-    - "delayed_multi_qubit_teleportation_measurements"
-
+  - delayed_multi_qubit_teleportation_measurements
 quantum_resource_occupation:
-  occupied_resource_type: "quantum_memory_qubits"
-  maximum_storage_time_evidence_ref: "feasibility_descriptor.derived_feasibility_evidence.memory_occupation_time"
-  completion_condition: "all_requested_qubits_reconstructed_at_qpu"
-
+  occupied_resource_type: quantum_memory_qubits
+  maximum_storage_time_evidence_ref: feasibility_descriptor.derived_feasibility_evidence.memory_occupation_time
+  completion_condition: all_requested_qubits_reconstructed_at_qpu
 classical_message_bindings:
-  heralding_profile_ref: "classical_support_descriptor.traffic_support.support_profile_catalog.critical_quantum_control"
-  measurement_outcomes_profile_ref: "classical_support_descriptor.traffic_support.support_profile_catalog.critical_quantum_control"
-  feed_forward_profile_ref: "classical_support_descriptor.traffic_support.support_profile_catalog.critical_quantum_control"
-  acknowledgments_profile_ref: "classical_support_descriptor.traffic_support.support_profile_catalog.critical_quantum_control"
-  orchestration_profile_ref: "classical_support_descriptor.traffic_support.support_profile_catalog.orchestration_control"
-
+  heralding_profile_ref: classical_support_descriptor.traffic_support.support_profile_catalog.critical_quantum_control
+  measurement_outcomes_profile_ref: classical_support_descriptor.traffic_support.support_profile_catalog.critical_quantum_control
+  feed_forward_profile_ref: classical_support_descriptor.traffic_support.support_profile_catalog.critical_quantum_control
+  acknowledgments_profile_ref: classical_support_descriptor.traffic_support.support_profile_catalog.critical_quantum_control
+  orchestration_profile_ref: classical_support_descriptor.traffic_support.support_profile_catalog.orchestration_control
 workflow_outputs:
-  success_condition: >-
-    Required Bell pairs are completed, all input qubits are reconstructed at
-    QPU-01, the reconstructed-qubit fidelity target is satisfied, the
-    teleportation-stage deadline is met, and critical classical-support
-    constraints are not violated.
-  downstream_trigger: "remote_qpu_operation_can_start"
-
-ownership:
-  owner: "service_request_management"
-  data_sources:
-    - "service_procedure_catalogue"
-    - "service_descriptor"
-    - "quantum_resource_descriptor"
-    - "classical_support_descriptor"
-
-update_semantics:
-  triggers:
-    - "workflow_template_update"
-    - "service_request_update"
-    - "deployment_variant_selection"
-    - "workflow_progress_update"
-  refreshable_sections:
-    - "workflow_steps"
-    - "dependency_graph"
-    - "timing_and_retry_policy"
-    - "workflow_outputs"
+  success_condition: Required Bell pairs are completed, all input qubits are reconstructed at QPU-01, the reconstructed-qubit fidelity target is satisfied, the teleportation-stage deadline is met, and critical classical-support constraints are not violated.

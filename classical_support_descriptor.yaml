@@ -1,110 +1,110 @@
-schema_version: "0.1-draft"
-descriptor_type: "classical_support_descriptor"
-descriptor_id: "classical_support_descriptor-01"
-service_ref: "svc-01"
-
+schema_version: 0.1-draft
+descriptor_type: classical_support_descriptor
+descriptor_id: classical_support_descriptor-01
+service_ref: svc-01
 support_capabilities:
   connectivity_context:
-    topology: "QUE--QBS/gNB--UPF--edge_control_function--QPU-control-endpoint"
-    support_path_id: "csup-path-01"
-    source_endpoint_ref: "QUE-01"
-    destination_endpoint_ref: "QPU-01"
-    access_node_id: "QBS-01"
-    access_node_type: "integrated_quantum_classical_access_node"
-    exposed_3gpp_role: "gNB"
-    selected_ng_ran_split: "cu_cp_cu_up_du_split"
-    classical_access_link_id: "QUE-01_QBS-01"
-    upf_id: "UPF-edge-01"
-    upf_role: "edge_user_plane_anchor"
-    edge_location_id: "edge-01"
-    edge_control_function_id: "edge-control-01"
-    qpu_control_endpoint_id: "QPU-01"
-    qpu_control_endpoint_role: "teleportation_outcome_destination_and_remote_execution_endpoint"
+    topology: CUE/QUE--6G-radio--QBS/gNB--UPF--edge-control-function--QPU-control-endpoint
+    support_path_id: csup-path-01
+    quantum_endpoint_ref: QUE-01
+    source_endpoint_ref: CUE-01
+    source_endpoint_role: classical_support_interface_associated_with_QUE-01
+    destination_endpoint_ref: QPU-01
+    qpu_control_endpoint_id: QPU-01
+    qpu_control_endpoint_role: teleportation_outcome_destination_and_remote_execution_endpoint
+    access_node_id: QBS-01
+    access_node_type: integrated_quantum_classical_access_node
+    exposed_3gpp_role: gNB
+    selected_ng_ran_split: cu_cp_cu_up_du_split
+    classical_access_link_id: CUE-01_QBS-01
+    classical_access_link_medium: 6g_radio_link
+    classical_transport_medium: classical_wired_link
+    classical_wired_link_note: The classical wired segment denotes a generic classical transport link; depending on deployment, it may be fiber, Ethernet, or another classical wired technology. It is distinct from quantum-capable fiber links.
+    upf_id: UPF-edge-01
+    upf_role: edge_user_plane_anchor
+    edge_location_id: edge-01
+    edge_control_function_id: edge-control-01
     support_path_nodes:
-      - node_id: "QUE-01"
-        node_type: "QUE"
-        role: "classical_support_traffic_source_and_teleportation_measurement_node"
-      - node_id: "QBS-01"
-        node_type: "integrated_qbs_gnb"
-        role: "integrated_quantum_classical_access"
-      - node_id: "UPF-edge-01"
-        node_type: "UPF"
-        role: "low_latency_user_plane_anchor"
-      - node_id: "edge-control-01"
-        node_type: "edge_control_function"
-        role: "quantum_workflow_control"
-      - node_id: "QPU-01"
-        node_type: "remote_qpu_control_endpoint"
-        role: "teleportation_outcome_destination_pauli_update_node_and_remote_execution_endpoint"
-
+    - node_id: CUE-01
+      associated_quantum_interface_ref: QUE-01
+      node_type: CUE
+      role: classical_support_traffic_source
+    - node_id: QBS-01
+      node_type: integrated_qbs_gnb
+      role: integrated_quantum_classical_access
+    - node_id: UPF-edge-01
+      node_type: UPF
+      role: low_latency_user_plane_anchor
+    - node_id: edge-control-01
+      node_type: edge_control_function
+      role: quantum_workflow_control
+    - node_id: QPU-01
+      node_type: remote_qpu_control_endpoint
+      role: teleportation_outcome_destination_pauli_update_node_and_remote_execution_endpoint
   managed_resource_context:
     access_resource_context:
-      ng_ran_nrm_ref: "ng-ran-nrm-descriptor-01"
-      selected_ng_ran_split: "cu_cp_cu_up_du_split"
+      ng_ran_nrm_ref: ng-ran-nrm-descriptor-01
+      selected_ng_ran_split: cu_cp_cu_up_du_split
       ng_ran_managed_object_refs:
-        - managed_object_ref: "gnb-cu-cp-function-qbs-01"
-          managed_object_class: "GNBCUCPFunction"
-          managed_object_dn: "SubNetwork=sn-01,ManagedElement=qbs-01,GNBCUCPFunction=gnb-cu-cp-qbs-01"
-          role: "control_plane_central_unit"
-        - managed_object_ref: "gnb-cu-up-function-qbs-01"
-          managed_object_class: "GNBCUUPFunction"
-          managed_object_dn: "SubNetwork=sn-01,ManagedElement=qbs-01,GNBCUUPFunction=gnb-cu-up-qbs-01"
-          role: "user_plane_central_unit"
-        - managed_object_ref: "gnb-du-function-qbs-01"
-          managed_object_class: "GNBDUFunction"
-          managed_object_dn: "SubNetwork=sn-01,ManagedElement=qbs-01,GNBDUFunction=gnb-du-qbs-01"
-          role: "distributed_unit"
-
+      - managed_object_ref: gnb-cu-cp-function-qbs-01
+        managed_object_class: GNBCUCPFunction
+        managed_object_dn: SubNetwork=sn-01,ManagedElement=qbs-01,GNBCUCPFunction=gnb-cu-cp-qbs-01
+        role: control_plane_central_unit
+      - managed_object_ref: gnb-cu-up-function-qbs-01
+        managed_object_class: GNBCUUPFunction
+        managed_object_dn: SubNetwork=sn-01,ManagedElement=qbs-01,GNBCUUPFunction=gnb-cu-up-qbs-01
+        role: user_plane_central_unit
+      - managed_object_ref: gnb-du-function-qbs-01
+        managed_object_class: GNBDUFunction
+        managed_object_dn: SubNetwork=sn-01,ManagedElement=qbs-01,GNBDUFunction=gnb-du-qbs-01
+        role: distributed_unit
     user_plane_resource_context:
-      fivegc_nrm_ref: "5gc-nrm-descriptor-01"
+      fivegc_nrm_ref: 5gc-nrm-descriptor-01
       upf_managed_object_ref:
-        managed_object_ref: "upf-function-edge-01"
-        managed_object_class: "UPFFunction"
-        managed_object_dn: "SubNetwork=sn-01,ManagedElement=5gc-01,UPFFunction=upf-edge-01"
-        role: "edge_user_plane_anchor"
-
+        managed_object_ref: upf-function-edge-01
+        managed_object_class: UPFFunction
+        managed_object_dn: SubNetwork=sn-01,ManagedElement=5gc-01,UPFFunction=upf-edge-01
+        role: edge_user_plane_anchor
     edge_resource_context:
-      edge_computing_management_ref: "edge-computing-management-descriptor-01"
+      edge_computing_management_ref: edge-computing-management-descriptor-01
       edge_data_network_ref:
-        managed_object_ref: "edn-edge-01"
-        managed_object_class: "EdgeDataNetwork"
-        managed_object_dn: "SubNetwork=sn-01,EdgeDataNetwork=edn-edge-01"
-        role: "edge_data_network_hosting_quantum_control"
+        managed_object_ref: edn-edge-01
+        managed_object_class: EdgeDataNetwork
+        managed_object_dn: SubNetwork=sn-01,EdgeDataNetwork=edn-edge-01
+        role: edge_data_network_hosting_quantum_control
       edge_control_application_ref:
-        managed_object_ref: "eas-function-quantum-control-01"
-        managed_object_class: "EASFunction"
-        managed_object_dn: "SubNetwork=sn-01,EdgeDataNetwork=edn-edge-01,EASFunction=eas-quantum-control-01"
-        local_service_id: "edge-control-01"
-        role: "quantum_workflow_control"
-
+        managed_object_ref: eas-function-quantum-control-01
+        managed_object_class: EASFunction
+        managed_object_dn: SubNetwork=sn-01,EdgeDataNetwork=edn-edge-01,EASFunction=eas-quantum-control-01
+        local_service_id: edge-control-01
+        role: quantum_workflow_control
     qpu_control_resource_context:
-      qpu_control_endpoint_ref: "qpu-control-endpoint-01"
-      qpu_id: "QPU-01"
-      role: "teleportation_measurement_outcome_destination_and_remote_operation_control"
-      managed_object_ref: "qpu-control-endpoint-qpu-01"
-      managed_object_class: "OperatorSpecificQPUControlEndpoint"
-      managed_object_dn: "SubNetwork=sn-01,QuantumDomain=qd-01,QPU=QPU-01,ControlEndpoint=qpu-control-endpoint-01"
-
-# Quantum-classical message classes carried by the classical support path.
-# The fields in this section define the classical-support information used by
-# the quantum-service workflow. Critical quantum-control traffic is aligned
-# with the manuscript example: the feasibility evidence uses a 23 ms high-
-# percentile latency state and a 25 ms one-way latency bound. Orchestration
-# traffic uses looser bounds.
-traffic_support:
-  supported_message_classes:
-    - message_type: "heralding"
-      workflow_stage: "entanglement_generation"
-      direction: "quantum_nodes_to_control_function"
-      typical_sources: ["QBS-01", "QR-01", "QPU-01"]
-      typical_destinations: ["edge-control-01", "QUE-01"]
-      timing_sensitivity: "critical"
-      loss_sensitivity: "critical"
+      qpu_control_endpoint_ref: qpu-control-endpoint-01
+      qpu_id: QPU-01
+      role: teleportation_measurement_outcome_destination_and_remote_operation_control
+      managed_object_ref: qpu-control-endpoint-qpu-01
+      managed_object_class: OperatorSpecificQPUControlEndpoint
+      managed_object_dn: SubNetwork=sn-01,QuantumDomain=qd-01,QPU=QPU-01,ControlEndpoint=qpu-control-endpoint-01
+  traffic_support:
+    supported_message_classes:
+    - message_type: heralding
+      workflow_stage: entanglement_generation
+      direction: quantum_nodes_to_control_function
+      typical_sources:
+      - QBS-01
+      - QR-01
+      - QPU-01
+      typical_destinations:
+      - edge-control-01
+      - CUE-01
+      - QUE-01
+      timing_sensitivity: critical
+      loss_sensitivity: critical
       ordering_required: true
-      synchronization_relevance: "high"
-      latency_requirement:
-        latency_metric: "one_way_latency"
-        statistic_type: "mean_p95_and_bound"
+      synchronization_relevance: high
+      latency_requirement: &id001
+        latency_metric: one_way_latency
+        statistic_type: mean_p95_and_bound
         target_mean_one_way_latency_us: 10000
         target_p95_one_way_latency_us: 23000
         max_one_way_latency_us: 25000
@@ -114,93 +114,103 @@ traffic_support:
         max_packet_loss_probability: 0.001
       synchronization_requirement:
         max_time_error_ns: 1000
-      required_support_profile: "critical_quantum_control"
-      description: "Classical notifications reporting elementary Bell-pair generation outcomes."
-
-    - message_type: "acknowledgments"
-      workflow_stage: "workflow_coordination"
-      direction: "bidirectional"
-      typical_sources: ["QUE-01", "QBS-01", "QR-01", "QPU-01", "edge-control-01"]
-      typical_destinations: ["QUE-01", "QBS-01", "QR-01", "QPU-01", "edge-control-01"]
-      timing_sensitivity: "critical"
-      loss_sensitivity: "critical"
+      required_support_profile: critical_quantum_control
+      description: Classical notifications reporting elementary Bell-pair generation outcomes.
+    - message_type: acknowledgments
+      workflow_stage: workflow_coordination
+      direction: bidirectional
+      typical_sources:
+      - CUE-01
+      - QUE-01
+      - QBS-01
+      - QR-01
+      - QPU-01
+      - edge-control-01
+      typical_destinations:
+      - CUE-01
+      - QUE-01
+      - QBS-01
+      - QR-01
+      - QPU-01
+      - edge-control-01
+      timing_sensitivity: critical
+      loss_sensitivity: critical
       ordering_required: true
-      synchronization_relevance: "medium"
-      latency_requirement:
-        latency_metric: "one_way_latency"
-        statistic_type: "mean_p95_and_bound"
-        target_mean_one_way_latency_us: 10000
-        target_p95_one_way_latency_us: 23000
-        max_one_way_latency_us: 25000
+      synchronization_relevance: medium
+      latency_requirement: *id001
       jitter_requirement:
         max_jitter_us: 250
       loss_requirement:
         max_packet_loss_probability: 0.001
       synchronization_requirement:
         max_time_error_ns: 10000
-      required_support_profile: "critical_quantum_control"
-      description: "Acknowledgment messages confirming generation, swapping, teleportation, remote-QPU execution, and workflow-progress events."
-
-    - message_type: "measurement_outcomes"
-      workflow_stage: "measurement_and_correction"
-      direction: "measurement_node_to_correction_node"
-      typical_sources: ["QUE-01", "QBS-01", "QR-01"]
-      typical_destinations: ["QPU-01", "edge-control-01"]
-      timing_sensitivity: "critical"
-      loss_sensitivity: "critical"
+      required_support_profile: critical_quantum_control
+      description: Acknowledgment messages confirming generation, swapping, teleportation, remote-QPU execution, and workflow-progress events.
+    - message_type: measurement_outcomes
+      workflow_stage: measurement_and_correction
+      direction: measurement_node_to_correction_node
+      typical_sources:
+      - QUE-01
+      - QBS-01
+      - QR-01
+      typical_destinations:
+      - QPU-01
+      - edge-control-01
+      timing_sensitivity: critical
+      loss_sensitivity: critical
       ordering_required: true
-      synchronization_relevance: "high"
-      latency_requirement:
-        latency_metric: "one_way_latency"
-        statistic_type: "mean_p95_and_bound"
-        target_mean_one_way_latency_us: 10000
-        target_p95_one_way_latency_us: 23000
-        max_one_way_latency_us: 25000
+      synchronization_relevance: high
+      latency_requirement: *id001
       jitter_requirement:
         max_jitter_us: 250
       loss_requirement:
         max_packet_loss_probability: 0.001
       synchronization_requirement:
         max_time_error_ns: 1000
-      required_support_profile: "critical_quantum_control"
-      description: "Messages carrying swapping outcomes or teleportation Bell-state measurement outcomes."
-
-    - message_type: "feed_forward"
-      workflow_stage: "conditional_quantum_operation"
-      direction: "measurement_node_or_control_function_to_correction_node"
-      typical_sources: ["QUE-01", "edge-control-01"]
-      typical_destinations: ["QPU-01", "QBS-01", "QR-01"]
-      timing_sensitivity: "critical"
-      loss_sensitivity: "critical"
+      required_support_profile: critical_quantum_control
+      description: Messages carrying swapping outcomes or teleportation Bell-state measurement outcomes.
+    - message_type: feed_forward
+      workflow_stage: conditional_quantum_operation
+      direction: measurement_node_or_control_function_to_correction_node
+      typical_sources:
+      - QUE-01
+      - edge-control-01
+      typical_destinations:
+      - QPU-01
+      - QBS-01
+      - QR-01
+      timing_sensitivity: critical
+      loss_sensitivity: critical
       ordering_required: true
-      synchronization_relevance: "high"
-      latency_requirement:
-        latency_metric: "one_way_latency"
-        statistic_type: "mean_p95_and_bound"
-        target_mean_one_way_latency_us: 10000
-        target_p95_one_way_latency_us: 23000
-        max_one_way_latency_us: 25000
+      synchronization_relevance: high
+      latency_requirement: *id001
       jitter_requirement:
         max_jitter_us: 250
       loss_requirement:
         max_packet_loss_probability: 0.001
       synchronization_requirement:
         max_time_error_ns: 1000
-      required_support_profile: "critical_quantum_control"
-      description: "Timing-sensitive messages used to trigger Pauli corrections or Pauli-frame updates."
-
-    - message_type: "orchestration_commands"
-      workflow_stage: "service_configuration_and_adaptation"
-      direction: "service_orchestrator_to_infrastructure"
-      typical_sources: ["service_orchestrator", "edge-control-01"]
-      typical_destinations: ["QBS-01", "QR-01", "QPU-01", "UPF-edge-01", "edge-control-01"]
-      timing_sensitivity: "high"
-      loss_sensitivity: "high"
+      required_support_profile: critical_quantum_control
+      description: Timing-sensitive messages used to trigger Pauli corrections or Pauli-frame updates.
+    - message_type: orchestration_commands
+      workflow_stage: service_configuration_and_adaptation
+      direction: service_orchestrator_to_infrastructure
+      typical_sources:
+      - service_orchestrator
+      - edge-control-01
+      typical_destinations:
+      - QBS-01
+      - QR-01
+      - QPU-01
+      - UPF-edge-01
+      - edge-control-01
+      timing_sensitivity: high
+      loss_sensitivity: high
       ordering_required: true
-      synchronization_relevance: "medium"
+      synchronization_relevance: medium
       latency_requirement:
-        latency_metric: "one_way_latency"
-        statistic_type: "mean_p95_and_bound"
+        latency_metric: one_way_latency
+        statistic_type: mean_p95_and_bound
         target_mean_one_way_latency_us: 20000
         target_p95_one_way_latency_us: 30000
         max_one_way_latency_us: 50000
@@ -210,25 +220,22 @@ traffic_support:
         max_packet_loss_probability: 0.001
       synchronization_requirement:
         max_time_error_ns: 1000000
-      required_support_profile: "orchestration_control"
+      required_support_profile: orchestration_control
+      description: Management and orchestration commands used for service configuration and bounded adaptation.
       alternative_support_profiles:
-        - "critical_quantum_control"
-      description: "Management and orchestration commands used for service configuration and bounded adaptation."
-
-  support_profile_catalog:
-    - support_profile_id: "critical_quantum_control"
-      profile_type: "critical_classical_support"
-      description: >-
-        Profile used for latency-critical heralding, measurement-outcome,
-        acknowledgment, and feed-forward traffic.
+      - critical_quantum_control
+    support_profile_catalog:
+    - support_profile_id: critical_quantum_control
+      profile_type: critical_classical_support
+      description: Profile used for latency-critical heralding, measurement-outcome, acknowledgment, and feed-forward traffic.
       traffic_treatment:
-        priority: "high"
+        priority: high
         network_slice_required: true
-        slice_ref: "slice-critical-quantum-control-01"
-        pdu_session_context_ref: "pdu-session-context-critical-01"
-        qos_flow_context_ref: "qos-flow-context-critical-01"
-        qos_flow_priority: "highest_available"
-        pcc_policy_ref: "pcc-policy-critical-quantum-control-01"
+        slice_ref: slice-critical-quantum-control-01
+        pdu_session_context_ref: pdu-session-context-critical-01
+        qos_flow_context_ref: qos-flow-context-critical-01
+        qos_flow_priority: highest_available
+        pcc_policy_ref: pcc-policy-critical-quantum-control-01
       profile_requirement_envelope:
         target_mean_one_way_latency_us: 10000
         target_p95_one_way_latency_us: 23000
@@ -236,17 +243,16 @@ traffic_support:
         max_jitter_us: 250
         max_packet_loss_probability: 0.001
         max_time_error_ns: 1000
-
-    - support_profile_id: "orchestration_control"
-      profile_type: "orchestration_classical_support"
-      description: "Profile used for orchestration and bounded-adaptation messages."
+    - support_profile_id: orchestration_control
+      profile_type: orchestration_classical_support
+      description: Profile used for orchestration and bounded-adaptation messages.
       traffic_treatment:
-        priority: "high"
+        priority: high
         network_slice_required: false
-        default_orchestration_context_ref: "default-shared-orchestration-context-01"
-        pdu_session_context_ref: "pdu-session-context-orchestration-01"
-        qos_flow_context_ref: "qos-flow-context-orchestration-01"
-        pcc_policy_ref: "pcc-policy-orchestration-01"
+        default_orchestration_context_ref: default-shared-orchestration-context-01
+        pdu_session_context_ref: pdu-session-context-orchestration-01
+        qos_flow_context_ref: qos-flow-context-orchestration-01
+        pcc_policy_ref: pcc-policy-orchestration-01
       profile_requirement_envelope:
         target_mean_one_way_latency_us: 20000
         target_p95_one_way_latency_us: 30000
@@ -254,32 +260,31 @@ traffic_support:
         max_jitter_us: 10000
         max_packet_loss_probability: 0.001
         max_time_error_ns: 1000000
-
-  selected_support_profile_for_baseline: "critical_quantum_control"
-
-edge_control_capabilities:
-  edge_control_reachability_supported: true
-  control_function_placement_supported: true
-  qpu_control_endpoint_reachability_supported: true
-  edge_computing_management_ref: "edge-computing-management-descriptor-01"
-  selected_edge_data_network_ref: "edn-edge-01"
-  selected_edge_application_ref: "eas-function-quantum-control-01"
-  supported_control_locations: ["edge-01"]
-  supported_edge_control_functions: ["edge-control-01"]
-  supported_qpu_control_endpoints: ["QPU-01"]
-
-synchronization_capabilities:
-  synchronization_supported: true
-  synchronization_support_ref: "synchronization-support-descriptor-01"
-  nominal_accuracy_ns: 1000
-  supported_sync_profiles:
-    - "network_time_synchronization"
-  intended_use: "coordinate_timing_sensitive_quantum_classical_workflow_steps_for_multi_qubit_teleportation"
-
+    selected_support_profile_for_baseline: critical_quantum_control
+  edge_control_capabilities:
+    edge_control_reachability_supported: true
+    control_function_placement_supported: true
+    qpu_control_endpoint_reachability_supported: true
+    edge_computing_management_ref: edge-computing-management-descriptor-01
+    selected_edge_data_network_ref: edn-edge-01
+    selected_edge_application_ref: eas-function-quantum-control-01
+    supported_control_locations:
+    - edge-01
+    supported_edge_control_functions:
+    - edge-control-01
+    supported_qpu_control_endpoints:
+    - QPU-01
+  synchronization_capabilities:
+    synchronization_supported: true
+    synchronization_support_ref: synchronization-support-descriptor-01
+    nominal_accuracy_ns: 1000
+    supported_sync_profiles:
+    - network_time_synchronization
+    intended_use: coordinate_timing_sensitive_quantum_classical_workflow_steps_for_multi_qubit_teleportation
 state_and_validity:
-  state_timestamp_utc: "2026-06-09T00:00:00Z"
+  state_timestamp_utc: '2026-06-09T00:00:00Z'
   state_freshness_policy:
-    refresh_mode: "event_driven_with_periodic_background_refresh"
+    refresh_mode: event_driven_with_periodic_background_refresh
     max_age_for_topology_and_capabilities_s: 300
     max_age_for_latency_and_jitter_state_s: 5
     max_age_for_packet_loss_state_s: 5
@@ -291,66 +296,59 @@ state_and_validity:
     max_age_for_synchronization_state_s: 30
     requires_refresh_before_admission: true
     requires_refresh_before_reservation: true
-
   latency_state:
-    last_updated_utc: "2026-06-09T00:00:00Z"
-    latency_class: "low_latency"
-    latency_metric: "one_way_latency"
-    statistic_type: "mean_p95_p99_and_bound"
+    last_updated_utc: '2026-06-09T00:00:00Z'
+    latency_class: low_latency
+    latency_metric: one_way_latency
+    statistic_type: mean_p95_p99_and_bound
     measurement_window_s: 5
     estimated_mean_one_way_latency_us: 10000
     estimated_p95_one_way_latency_us: 23000
     estimated_p99_one_way_latency_us: 24000
     support_latency_bound_us: 25000
-    estimation_method: "telemetry_calibrated_latency_model"
-    model_ref: "classical_support_latency_model_v0.1"
-    performance_measurement_ref: "pm-kpi-descriptor-classical-support-01"
-
+    estimation_method: telemetry_calibrated_latency_model
+    model_ref: classical_support_latency_model_v0.1
+    performance_measurement_ref: pm-kpi-descriptor-classical-support-01
   jitter_state:
-    last_updated_utc: "2026-06-09T00:00:00Z"
-    jitter_class: "bounded"
-    jitter_metric: "one_way_packet_delay_variation"
+    last_updated_utc: '2026-06-09T00:00:00Z'
+    jitter_class: bounded
+    jitter_metric: one_way_packet_delay_variation
     estimated_jitter_us: 100
     jitter_bound_us: 250
-
   packet_loss_state:
-    last_updated_utc: "2026-06-09T00:00:00Z"
-    estimated_packet_loss_probability: 0.00004
+    last_updated_utc: '2026-06-09T00:00:00Z'
+    estimated_packet_loss_probability: 4.0e-05
     packet_loss_bound_probability: 0.001
-
   synchronization_state:
-    last_updated_utc: "2026-06-09T00:00:00Z"
+    last_updated_utc: '2026-06-09T00:00:00Z'
     estimated_time_error_ns: 100
     synchronization_bound_ns: 1000
-    synchronization_profile_ref: "network_time_synchronization"
-
+    synchronization_profile_ref: network_time_synchronization
   support_availability_state:
-    access_status: "available"
-    user_plane_status: "available"
-    edge_control_status: "available"
-    qpu_control_endpoint_status: "available"
-    selected_profile_status: "available"
-
+    access_status: available
+    user_plane_status: available
+    edge_control_status: available
+    qpu_control_endpoint_status: available
+    selected_profile_status: available
 ownership:
-  owner: "infrastructure_state_repository"
+  owner: infrastructure_state_repository
   data_sources:
-    - source_id: "classical_support_inventory"
-    - source_id: "6g_telemetry"
-    - source_id: "qos_monitoring"
-    - source_id: "edge_cloud_monitoring"
-    - source_id: "synchronization_monitoring"
-    - source_id: "operator_policy_configuration"
-
-update_semantics:
-  triggers:
-    - "classical_support_inventory_update"
-    - "support_path_update"
-    - "slice_or_qos_state_update"
-    - "latency_or_jitter_state_update"
-    - "packet_loss_state_update"
-    - "edge_cloud_state_update"
-    - "synchronization_state_update"
-    - "freshness_policy_update"
-  refreshable_sections:
-    - "support_capabilities"
-    - "state_and_validity"
+  - source_id: classical_support_inventory
+  - source_id: 6g_telemetry
+  - source_id: qos_monitoring
+  - source_id: edge_cloud_monitoring
+  - source_id: synchronization_monitoring
+  - source_id: operator_policy_configuration
+  update_semantics:
+    triggers:
+    - classical_support_inventory_update
+    - support_path_update
+    - slice_or_qos_state_update
+    - latency_or_jitter_state_update
+    - packet_loss_state_update
+    - edge_cloud_state_update
+    - synchronization_state_update
+    - freshness_policy_update
+    refreshable_sections:
+    - support_capabilities
+    - state_and_validity

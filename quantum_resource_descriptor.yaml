@@ -1,79 +1,93 @@
-schema_version: "0.1-draft"
-descriptor_type: "quantum_resource_descriptor"
-descriptor_id: "quantum_resource_descriptor-01"
-service_ref: "svc-01"
-
+schema_version: 0.1-draft
+descriptor_type: quantum_resource_descriptor
+descriptor_id: quantum_resource_descriptor-01
+service_ref: svc-01
 available_capabilities:
   connectivity_context:
-    topology: "QUE--QBS--QR--QPU"
-    source_endpoint_id: "QUE-01"
-    source_endpoint_type: "QUE"
-    qbs_id: "QBS-01"
-    destination_endpoint_id: "QPU-01"
-    destination_endpoint_type: "QPU"
+    topology: QUE--QBS--QR--QPU
+    source_endpoint_id: QUE-01
+    source_endpoint_type: QUE
+    associated_classical_endpoint_id: CUE-01
+    qbs_id: QBS-01
+    destination_endpoint_id: QPU-01
+    destination_endpoint_type: QPU
     repeater_ids:
-      - "QR-01"
-    qpath_id: "qpath-01"
+    - QR-01
+    number_of_quantum_repeaters: 1
+    qpath_id: qpath-01
+    path_model: single_quantum_repeater_path_with_qbs_access_swapping
     qpath_nodes:
-      - "QUE-01"
-      - "QBS-01"
-      - "QR-01"
-      - "QPU-01"
+    - QUE-01
+    - QBS-01
+    - QR-01
+    - QPU-01
     access_context:
-      quantum_access_node_id: "QBS-01"
-      attached_endpoint_id: "QUE-01"
-      access_link_id: "QUE-01_QBS-01"
-
+      quantum_access_node_id: QBS-01
+      attached_endpoint_id: QUE-01
+      access_link_id: QUE-01_QBS-01
+      access_link_physical_medium: quantum_fso
+      description: The access quantum link is modeled as a quantum FSO link, consistent with mobile or temporary quantum-enabled endpoints where dedicated quantum-capable fiber is not assumed.
+  quantum_links:
+  - link_id: QUE-01_QBS-01
+    link_role: source_access_link
+    physical_medium: quantum_fso
+    generation_supported: true
+    description: Quantum FSO access link between the QUE and the QBS.
+  - link_id: QBS-01_QR-01
+    link_role: source_side_infrastructure_link
+    physical_medium: quantum_fiber
+    generation_supported: true
+    description: Quantum fiber link inside the quantum infrastructure.
+  - link_id: QR-01_QPU-01
+    link_role: destination_side_infrastructure_link
+    physical_medium: quantum_fiber
+    generation_supported: true
+    description: Quantum fiber link toward the remote QPU domain.
   quantum_memory_resources:
-    resource_unit: "qubits"
-    resource_description: >-
-      Each memory qubit denotes one quantum memory resource able to temporarily
-      store an input qubit, one half of an elementary Bell pair, one half of an
-      end-to-end Bell pair, or a reconstructed teleported qubit.
+    resource_unit: qubits
+    resource_description: Each memory qubit denotes one quantum memory resource able to temporarily store an input qubit, one half of an elementary Bell pair, one half of an end-to-end Bell pair, or a reconstructed teleported qubit.
     node_resources:
-      - node_id: "QUE-01"
-        node_type: "QUE"
-        total_memory_qubits: 12
-        functional_role: "source_endpoint_and_teleportation_measurement_node"
-      - node_id: "QBS-01"
-        node_type: "QBS"
-        total_memory_qubits: 16
-        functional_role: "access_swapping_node"
-      - node_id: "QR-01"
-        node_type: "QR"
-        total_memory_qubits: 16
-        functional_role: "repeater_swapping_node"
-      - node_id: "QPU-01"
-        node_type: "QPU"
-        total_memory_qubits: 12
-        functional_role: "remote_processor_and_teleportation_correction_node"
-
+    - node_id: QUE-01
+      node_type: QUE
+      total_memory_qubits: 12
+      functional_role: source_endpoint_and_teleportation_measurement_node
+    - node_id: QBS-01
+      node_type: QBS
+      total_memory_qubits: 16
+      functional_role: access_swapping_node
+    - node_id: QR-01
+      node_type: QR
+      total_memory_qubits: 16
+      functional_role: repeater_swapping_node
+    - node_id: QPU-01
+      node_type: QPU
+      total_memory_qubits: 12
+      functional_role: remote_processor_and_teleportation_correction_node
   processing_context:
     remote_processing_supported: true
     remote_qpu_operation_execution_supported: true
-    remote_execution_node_id: "QPU-01"
+    remote_execution_node_id: QPU-01
     supported_remote_operations:
-      - "remote_qpu_operation_execution"
-      - "remote_processing_support"
+    - remote_qpu_operation_execution
+    - remote_processing_support
     supported_execution_gates:
-      - "all_requested_qubits_available_at_qpu"
-
+    - all_requested_qubits_available_at_qpu
   generation_capacity:
     parallel_attempts_supported_per_elementary_link: 4
-    attempt_description: >-
-      Parallel attempts indicate how many Bell-pair generation processes can be
-      active at the same time on each elementary link.
+    attempt_description: Parallel attempts indicate how many Bell-pair generation processes can be active at the same time on each elementary link.
     elementary_links:
-      - link_id: "QUE-01_QBS-01"
-        generation_supported: true
-        link_role: "source_access_link"
-      - link_id: "QBS-01_QR-01"
-        generation_supported: true
-        link_role: "source_side_infrastructure_link"
-      - link_id: "QR-01_QPU-01"
-        generation_supported: true
-        link_role: "destination_side_infrastructure_link"
-
+    - link_id: QUE-01_QBS-01
+      generation_supported: true
+      link_role: source_access_link
+      physical_medium: quantum_fso
+    - link_id: QBS-01_QR-01
+      generation_supported: true
+      link_role: source_side_infrastructure_link
+      physical_medium: quantum_fiber
+    - link_id: QR-01_QPU-01
+      generation_supported: true
+      link_role: destination_side_infrastructure_link
+      physical_medium: quantum_fiber
   protocol_capabilities:
     entanglement_generation: true
     entanglement_swapping: true
@@ -88,130 +102,120 @@ available_capabilities:
     feed_forward_support: true
     entanglement_distillation_supported: true
     distillation_modes:
-      - "purification"
+    - purification
     memory_reset: true
     memory_reuse_after_measurement: true
     swapping_nodes:
-      - "QBS-01"
-      - "QR-01"
-
+    - QBS-01
+    - QR-01
   teleportation_context:
     supported_teleportation_strategies:
-      - "delayed_multi_qubit_teleportation"
-      - "immediate_teleportation"
-    input_qubit_source_node_id: "QUE-01"
-    bell_state_measurement_node_id: "QUE-01"
-    teleported_qubit_destination_node_id: "QPU-01"
-    pauli_correction_node_id: "QPU-01"
-    remote_execution_node_id: "QPU-01"
-    remote_execution_gate: "all_requested_qubits_available_at_qpu"
+    - delayed_multi_qubit_teleportation
+    - immediate_teleportation
+    input_qubit_source_node_id: QUE-01
+    bell_state_measurement_node_id: QUE-01
+    teleported_qubit_destination_node_id: QPU-01
+    pauli_correction_node_id: QPU-01
+    remote_execution_node_id: QPU-01
+    remote_execution_gate: all_requested_qubits_available_at_qpu
     bell_pair_consumption_model:
       bell_pairs_per_input_qubit: 1
-      description: >-
-        Each input qubit teleported from QUE-01 to QPU-01 consumes one
-        end-to-end Bell pair.
-
+      description: Each input qubit teleported from QUE-01 to QPU-01 consumes one end-to-end Bell pair.
 quality_and_validity:
-  state_timestamp_utc: "2026-06-09T00:00:00Z"
+  state_timestamp_utc: '2026-06-09T00:00:00Z'
   state_freshness_policy:
-    refresh_mode: "event_driven_with_periodic_background_refresh"
+    refresh_mode: event_driven_with_periodic_background_refresh
     max_age_for_topology_and_capabilities_s: 300
     max_age_for_link_quality_estimates_s: 60
     max_age_for_memory_state_s: 5
     max_age_for_qpu_availability_s: 5
     requires_refresh_before_admission: true
     requires_refresh_before_reservation: true
-
   link_quality_state:
-    last_updated_utc: "2026-06-09T00:00:00Z"
-    quality_description: >-
-      Per-link estimates refer to elementary Bell pairs generated over each
-      quantum link before entanglement swapping, storage-induced decoherence,
-      distillation, teleportation, or end-to-end feasibility evaluation.
+    last_updated_utc: '2026-06-09T00:00:00Z'
+    quality_description: Per-link estimates refer to elementary Bell pairs generated over each quantum link before entanglement swapping, storage-induced decoherence, distillation, teleportation, or end-to-end feasibility evaluation.
     elementary_link_estimates:
-      - link_id: "QUE-01_QBS-01"
-        estimated_elementary_pair_fidelity: 0.94
-        estimated_generation_success_probability: 0.80
-        estimation_method: "telemetry_calibrated_analytical_model"
-        model_ref: "elementary_link_model_v0.1"
-      - link_id: "QBS-01_QR-01"
-        estimated_elementary_pair_fidelity: 0.92
-        estimated_generation_success_probability: 0.75
-        estimation_method: "telemetry_calibrated_analytical_model"
-        model_ref: "elementary_link_model_v0.1"
-      - link_id: "QR-01_QPU-01"
-        estimated_elementary_pair_fidelity: 0.90
-        estimated_generation_success_probability: 0.70
-        estimation_method: "telemetry_calibrated_analytical_model"
-        model_ref: "elementary_link_model_v0.1"
-
+    - link_id: QUE-01_QBS-01
+      physical_medium: quantum_fso
+      estimated_elementary_pair_fidelity: 0.94
+      estimated_generation_success_probability: 0.8
+      estimation_method: telemetry_calibrated_analytical_model
+      model_ref: elementary_link_model_v0.1
+    - link_id: QBS-01_QR-01
+      physical_medium: quantum_fiber
+      estimated_elementary_pair_fidelity: 0.92
+      estimated_generation_success_probability: 0.75
+      estimation_method: telemetry_calibrated_analytical_model
+      model_ref: elementary_link_model_v0.1
+    - link_id: QR-01_QPU-01
+      physical_medium: quantum_fiber
+      estimated_elementary_pair_fidelity: 0.9
+      estimated_generation_success_probability: 0.7
+      estimation_method: telemetry_calibrated_analytical_model
+      model_ref: elementary_link_model_v0.1
   memory_state:
-    last_updated_utc: "2026-06-09T00:00:00Z"
-    status: "resources_available"
+    last_updated_utc: '2026-06-09T00:00:00Z'
+    status: resources_available
     node_states:
-      - node_id: "QUE-01"
-        available_memory_qubits: 8
-        coherence_time_us: 10000000
-      - node_id: "QBS-01"
-        available_memory_qubits: 12
-        coherence_time_us: 10000000
-      - node_id: "QR-01"
-        available_memory_qubits: 12
-        coherence_time_us: 10000000
-      - node_id: "QPU-01"
-        available_memory_qubits: 8
-        coherence_time_us: 10000000
+    - node_id: QUE-01
+      available_memory_qubits: 8
+      coherence_time_us: 10000000
+    - node_id: QBS-01
+      available_memory_qubits: 12
+      coherence_time_us: 10000000
+    - node_id: QR-01
+      available_memory_qubits: 12
+      coherence_time_us: 10000000
+    - node_id: QPU-01
+      available_memory_qubits: 8
+      coherence_time_us: 10000000
     limiting_coherence_time_us: 10000000
-
   teleportation_state:
-    last_updated_utc: "2026-06-09T00:00:00Z"
-    status: "available"
-    bell_state_measurement_node_id: "QUE-01"
-    bell_state_measurement_status: "available"
-    pauli_correction_node_id: "QPU-01"
-    pauli_correction_status: "available"
-    feed_forward_destination_node_id: "QPU-01"
-    feed_forward_status: "available"
+    last_updated_utc: '2026-06-09T00:00:00Z'
+    status: available
+    bell_state_measurement_node_id: QUE-01
+    bell_state_measurement_status: available
+    pauli_correction_node_id: QPU-01
+    pauli_correction_status: available
+    feed_forward_destination_node_id: QPU-01
+    feed_forward_status: available
     admissible_teleportation_strategies:
-      - "delayed_multi_qubit_teleportation"
-      - "immediate_teleportation"
-
+    - delayed_multi_qubit_teleportation
+    - immediate_teleportation
   qpu_state:
-    last_updated_utc: "2026-06-09T00:00:00Z"
-    qpu_id: "QPU-01"
-    availability_status: "available"
+    last_updated_utc: '2026-06-09T00:00:00Z'
+    qpu_id: QPU-01
+    availability_status: available
     available_logical_qubits: 8
-    current_service_logical_qubit_demand_ref: "service_descriptor.operation_profile.resource_demand.remote_qpu_logical_qubits"
+    current_service_logical_qubit_demand_ref: service_descriptor.resource_demand.remote_qpu_logical_qubits
     accepted_remote_operations:
-      - "remote_qpu_operation_execution"
-      - "remote_processing_support"
+    - remote_qpu_operation_execution
+    - remote_processing_support
     supported_execution_gates:
-      - "all_requested_qubits_available_at_qpu"
-    reservation_status: "available_for_reservation"
+    - all_requested_qubits_available_at_qpu
+    reservation_status: available_for_reservation
     estimated_queue_delay_us: 0
-
 ownership:
-  owner: "infrastructure_state_repository"
+  owner: infrastructure_state_repository
   data_sources:
-    - source_id: "quantum_resource_inventory"
-    - source_id: "quantum_resource_telemetry"
-    - source_id: "quantum_link_estimator"
-    - source_id: "teleportation_capability_monitor"
-    - source_id: "qpu_resource_manager"
-    - source_id: "orchestration_resource_reservations"
-    - source_id: "operator_policy_configuration"
-
-update_semantics:
-  triggers:
-    - "quantum_resource_inventory_update"
-    - "quantum_path_update"
-    - "quantum_link_state_update"
-    - "quantum_memory_state_update"
-    - "teleportation_capability_update"
-    - "qpu_availability_update"
-    - "reservation_state_update"
-    - "estimation_model_update"
-    - "freshness_policy_update"
-  refreshable_sections:
-    - "available_capabilities"
-    - "quality_and_validity"
+  - source_id: quantum_resource_inventory
+  - source_id: quantum_resource_telemetry
+  - source_id: quantum_link_estimator
+  - source_id: teleportation_capability_monitor
+  - source_id: qpu_resource_manager
+  - source_id: orchestration_resource_reservations
+  - source_id: operator_policy_configuration
+  update_semantics:
+    triggers:
+    - quantum_resource_inventory_update
+    - quantum_path_update
+    - quantum_link_state_update
+    - quantum_memory_state_update
+    - teleportation_capability_update
+    - qpu_availability_update
+    - reservation_state_update
+    - estimation_model_update
+    - freshness_policy_update
+    refreshable_sections:
+    - available_capabilities
+    - quality_and_validity
