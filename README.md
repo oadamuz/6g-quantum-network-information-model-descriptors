@@ -179,3 +179,10 @@ If you use these descriptor examples, please cite the associated manuscript:
   year    = {2026}
 }
 ```
+
+## License
+
+The descriptor examples and documentation in this repository are licensed under the Creative Commons Attribution 4.0 International License (CC BY 4.0).
+
+You are free to share and adapt the material, provided that appropriate credit is given to the original authors and to the associated manuscript.
+
